@@ -6,7 +6,7 @@ import { useApp } from '../context/AppContext';
 //  React ne fait aucune logique d'analyse !
 // ══════════════════════════════════════
 
-const API_URL = 'http://localhost:8000';
+const API_URL = 'https://pedabot6backend.onrender.com';
 
 export default function Sidebar() {
   const { setStep, addMessage, wizardDraft, setWizardDraft } = useApp();

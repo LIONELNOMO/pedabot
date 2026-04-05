@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 
-const API_URL = 'http://localhost:8000';
+const API_URL = 'https://pedabot6backend.onrender.com';
 
 // ══════════════════════════════════════
 //  SOUS-COMPOSANTS (un par type interactif)
