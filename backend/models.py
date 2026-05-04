@@ -24,6 +24,7 @@ class GenerationRequest(BaseModel):
 class DeepenRequest(BaseModel):
     exerciseTitle: str
     lang: str         # algo, python, javascript
+    section: Optional[SectionItem] = None
 
 # ══════════════════════════════════════
 #  RÉPONSES
@@ -39,6 +40,7 @@ class ExerciseOutput(BaseModel):
     title: str
     body: str
     code: Optional[str] = None
+    section: Optional[SectionItem] = None
 
 class GenerationResponse(BaseModel):
     exercises: List[ExerciseOutput]

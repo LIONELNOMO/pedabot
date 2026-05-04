@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Cours Test PédaBot — Les Structures de Contrôle en Algorithmique</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; line-height: 1.7; color: #1a1a1a; }
+    h1 { color: #1E52C4; border-bottom: 2px solid #1E52C4; padding-bottom: 8px; }
+    h2 { color: #2B6BE6; margin-top: 40px; }
+    code { background: #f4f4f4; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+    pre { background: #f4f4f4; padding: 16px; border-radius: 8px; border-left: 4px solid #2B6BE6; }
+    .note { background: #fffbe6; border-left: 4px solid #f59e0b; padding: 12px 16px; border-radius: 4px; margin: 16px 0; }
+  </style>
+</head>
+<body>
+
+<h1>Les Structures de Contrôle en Algorithmique</h1>
+<p>Ce cours présente les principales structures permettant de contrôler le flux d'exécution d'un algorithme.</p>
+
+<!-- ═══ PATTERN 1 : DÉFINITION ═══ -->
+<h2>I. Les Boucles — Définitions</h2>
+
+<p>Une <strong>boucle</strong> est une structure de contrôle qui permet de répéter un bloc d'instructions plusieurs fois.</p>
+
+<p>La boucle <strong>POUR</strong> se définit comme une structure itérative dont le nombre de répétitions est connu à l'avance.</p>
+
+<p>La boucle <strong>TANT QUE</strong> est définie comme une structure itérative dont la répétition dépend d'une condition évaluée avant chaque itération.</p>
+
+<p>Une <strong>variable de contrôle</strong> est définie comme une variable dont la valeur change à chaque itération et sert à piloter la boucle.</p>
+
+<p>L'<strong>itération</strong> désigne chaque passage individuel dans le corps d'une boucle.</p>
+
+<!-- ═══ PATTERN 2 : CAUSES / RAISONS ═══ -->
+<h2>II. Pourquoi Utiliser les Boucles</h2>
+
+<p>On utilise la boucle POUR <strong>parce que</strong> le nombre de répétitions est fixé avant l'exécution et ne dépend pas d'une condition dynamique.</p>
+
+<p>La boucle TANT QUE est utilisée <strong>car</strong> le nombre d'itérations ne peut pas être déterminé à l'avance et dépend d'un état du programme.</p>
+
+<p>On préfère la boucle RÉPÉTER JUSQU'À <strong>parce que</strong> la condition est vérifiée après l'exécution du bloc, garantissant au moins une exécution.</p>
+
+<p>Les boucles imbriquées sont nécessaires <strong>car</strong> certaines structures de données comme les tableaux à deux dimensions requièrent un parcours sur plusieurs axes.</p>
+
+<!-- ═══ PATTERN 3 : ÉTAPES / PROCÉDURE ═══ -->
+<h2>III. Comment Écrire une Boucle POUR — Étapes</h2>
+
+<p>Pour écrire une boucle POUR, il faut suivre les étapes suivantes :</p>
+
+<p><strong>Étape 1 :</strong> Déclarer la variable de contrôle (ex : <code>i</code>) et définir sa valeur initiale.</p>
+
+<p><strong>Étape 2 :</strong> Définir la valeur finale jusqu'à laquelle la variable progressera.</p>
+
+<p><strong>Étape 3 :</strong> Écrire le corps de la boucle, c'est-à-dire les instructions à répéter.</p>
+
+<p><strong>Étape 4 :</strong> Fermer la boucle avec le mot-clé <code>FIN POUR</code>.</p>
+
+<p><strong>Étape 5 :</strong> Vérifier la cohérence de la valeur initiale et de la valeur finale pour éviter une boucle infinie.</p>
+
+<pre>
+POUR i DE 1 À 10 FAIRE
+    Afficher(i)
+FIN POUR
+</pre>
+
+<!-- ═══ PATTERN 4 : CARACTÉRISTIQUES ═══ -->
+<h2>IV. Caractéristiques des Structures Itératives</h2>
+
+<p>La boucle POUR <strong>a pour caractéristique</strong> d'incrémenter automatiquement la variable de contrôle à chaque passage.</p>
+
+<p>La boucle TANT QUE <strong>se caractérise par</strong> le fait que si la condition est fausse dès le départ, le corps n'est jamais exécuté.</p>
+
+<p>La boucle RÉPÉTER JUSQU'À <strong>présente comme caractéristique</strong> d'exécuter le corps au moins une fois avant de tester la condition d'arrêt.</p>
+
+<p>Les boucles imbriquées <strong>ont la caractéristique</strong> que la boucle interne se termine entièrement avant chaque nouvelle itération de la boucle externe.</p>
+
+<!-- ═══ PATTERN 5 : AVANTAGES / INCONVÉNIENTS ═══ -->
+<h2>V. Avantages et Inconvénients</h2>
+
+<p>L'<strong>avantage</strong> principal de la boucle POUR est sa lisibilité : en un coup d'œil, on sait combien de fois le bloc s'exécutera.</p>
+
+<p>L'<strong>inconvénient</strong> de la boucle TANT QUE est le risque de boucle infinie si la condition n'est jamais rendue fausse.</p>
+
+<p>Un autre <strong>avantage</strong> des boucles est la réduction de la redondance du code : au lieu d'écrire 100 fois la même instruction, on l'encapsule dans une boucle.</p>
+
+<p>L'<strong>inconvénient</strong> des boucles imbriquées est leur complexité algorithmique qui peut devenir quadratique ou cubique selon le nombre de niveaux d'imbrication.</p>
+
+<!-- ═══ PATTERN 6 : CONDITIONS / CAS ═══ -->
+<h2>VI. Conditions d'Utilisation et Cas Particuliers</h2>
+
+<p><strong>Si</strong> le nombre d'itérations est connu à l'avance, <strong>alors</strong> on utilise la boucle POUR.</p>
+
+<p><strong>Si</strong> la condition peut être fausse dès le départ et qu'aucune exécution n'est souhaitée, <strong>alors</strong> on choisit la boucle TANT QUE.</p>
+
+<p><strong>Si</strong> au moins une exécution du corps est toujours requise, <strong>alors</strong> on opte pour la boucle RÉPÉTER JUSQU'À.</p>
+
+<p><strong>Dans le cas où</strong> la variable de contrôle ne change pas dans le corps de la boucle TANT QUE, on obtient une boucle infinie.</p>
+
+<p><strong>Lorsque</strong> deux boucles sont imbriquées avec des bornes de 10 chacune, le nombre total d'exécutions est de 100.</p>
+
+<!-- ═══ PATTERN 7 : EXEMPLES / SYNTAXE ═══ -->
+<h2>VII. Exemples et Syntaxe Comparée</h2>
+
+<p><strong>Exemple</strong> de boucle POUR affichant les nombres de 1 à 5 :</p>
+<pre>
+POUR i DE 1 À 5 FAIRE
+    Afficher(i)
+FIN POUR
+</pre>
+
+<p><strong>Exemple</strong> de boucle TANT QUE lisant des valeurs jusqu'à la saisie de 0 :</p>
+<pre>
+Lire(n)
+TANT QUE n != 0 FAIRE
+    Traiter(n)
+    Lire(n)
+FIN TANT QUE
+</pre>
+
+<p><strong>Exemple</strong> de boucles imbriquées pour parcourir un tableau 3×3 :</p>
+<pre>
+POUR i DE 0 À 2 FAIRE
+    POUR j DE 0 À 2 FAIRE
+        Afficher(tableau[i][j])
+    FIN POUR
+FIN POUR
+</pre>
+
+<div class="note">
+  <strong>Note :</strong> En Python, la boucle POUR s'écrit <code>for i in range(1, 6):</code> et en JavaScript <code>for (let i = 1; i &lt;= 5; i++)</code>. La logique reste identique malgré la syntaxe différente.
+</div>
+
+<h2>Résumé</h2>
+<p>Les trois grandes structures itératives sont : la boucle <strong>POUR</strong> (nombre d'itérations connu), la boucle <strong>TANT QUE</strong> (condition en entrée) et la boucle <strong>RÉPÉTER JUSQU'À</strong> (condition en sortie). Le choix dépend du contexte et de la connaissance préalable du nombre de répétitions.</p>
+
+<hr style="margin:60px 0; border-color:#CBD5E1;">
+<h1>Les Fonctions et Modules en Algorithmique — Patterns avancés</h1>
+<p>Ce second cours couvre les patterns : classifications, compositions, synonymes, exceptions, abréviations, remarques, acteurs, formules, localisations et objectifs.</p>
+
+<!-- ═══ PATTERN : CLASSIFICATION ═══ -->
+<h2>I. Classification des Sous-programmes</h2>
+
+<p>On distingue deux grandes catégories de sous-programmes : les <strong>fonctions</strong> qui retournent une valeur, et les <strong>procédures</strong> qui effectuent une action sans retourner de résultat.</p>
+
+<p>Il existe trois types de passage de paramètres : le passage <strong>par valeur</strong>, le passage <strong>par référence</strong>, et le passage <strong>par résultat</strong>.</p>
+
+<p>Les modules se répartissent en deux familles : les modules <strong>standards</strong> (fournis avec le langage) et les modules <strong>utilisateur</strong> (créés par le développeur).</p>
+
+<!-- ═══ PATTERN : COMPOSITION ═══ -->
+<h2>II. Composition d'une Fonction</h2>
+
+<p>Une fonction est composée de quatre éléments : son <strong>en-tête</strong> (nom et paramètres), son <strong>corps</strong> (les instructions), ses <strong>variables locales</strong> et son <strong>instruction de retour</strong>.</p>
+
+<p>La signature d'une fonction comprend le nom de la fonction, la liste des paramètres et leur type, ainsi que le type de la valeur retournée.</p>
+
+<p>Un module est constitué d'une interface publique et d'une implémentation privée, ce qui garantit l'encapsulation.</p>
+
+<!-- ═══ PATTERN : SYNONYMES ═══ -->
+<h2>III. Vocabulaire — Synonymes et Équivalences</h2>
+
+<p>Une fonction est aussi appelée <strong>sous-programme</strong> dans le vocabulaire algorithmique classique.</p>
+
+<p>Le terme <strong>procédure</strong> est également nommé <strong>sous-algorithme</strong> dans certains manuels francophones.</p>
+
+<p>L'instruction <code>RETOURNER</code>, autrement dit <code>RETURN</code> en anglais, permet de renvoyer une valeur au programme appelant.</p>
+
+<p>Une variable locale, c'est-à-dire une variable déclarée à l'intérieur d'une fonction, n'est accessible que dans cette fonction.</p>
+
+<!-- ═══ PATTERN : EXCEPTIONS / CAS PARTICULIERS ═══ -->
+<h2>IV. Cas Particuliers et Exceptions</h2>
+
+<p>Une fonction retourne toujours une valeur, sauf dans le cas d'une procédure qui ne retourne rien.</p>
+
+<p>Les variables globales sont accessibles partout dans le programme, excepté dans les fonctions qui déclarent une variable locale du même nom.</p>
+
+<p>Attention : une fonction récursive sans condition d'arrêt provoque un débordement de pile (<em>stack overflow</em>).</p>
+
+<p>Il faut noter que le passage par référence modifie directement la variable originale, contrairement au passage par valeur.</p>
+
+<!-- ═══ PATTERN : ABRÉVIATIONS ═══ -->
+<h2>V. Abréviations et Acronymes</h2>
+
+<p>L'acronyme <strong>API</strong> (Application Programming Interface) désigne un ensemble de fonctions mises à disposition par un système pour être utilisées par d'autres programmes.</p>
+
+<p>Le sigle <strong>DRY</strong> (Don't Repeat Yourself) signifie qu'une même logique ne doit pas être codée à plusieurs endroits différents.</p>
+
+<p>L'abréviation <strong>fn</strong> est l'acronyme de <em>function</em> dans certains langages comme Rust.</p>
+
+<p>Le terme <strong>EOF</strong> est l'abréviation de <em>End Of File</em>, utilisé pour détecter la fin d'un fichier en lecture.</p>
+
+<!-- ═══ PATTERN : ACTEURS ═══ -->
+<h2>VI. Acteurs et Auteurs Clés</h2>
+
+<p>La notion de sous-programme a été proposée par <strong>David Wheeler</strong> en 1952, lors des premiers travaux sur le calculateur EDSAC.</p>
+
+<p>Selon <strong>Edsger Dijkstra</strong>, une fonction bien conçue ne doit faire qu'une seule chose et la faire bien.</p>
+
+<p>Le principe de modularité a été formalisé par <strong>Niklaus Wirth</strong>, créateur du langage Pascal, dans ses travaux sur la programmation structurée.</p>
+
+<!-- ═══ PATTERN : FORMULES / RÈGLES ═══ -->
+<h2>VII. Règles et Formules de Complexité</h2>
+
+<p>La complexité d'un appel récursif se calcule par la relation de récurrence : <strong>T(n) = T(n-1) + O(1)</strong> pour une récursion linéaire.</p>
+
+<p>Le nombre maximum d'appels récursifs est donné par la formule : <strong>profondeur = n</strong> pour une liste de taille n.</p>
+
+<p>La règle des <strong>10 lignes</strong> stipule qu'une fonction ne devrait pas dépasser 10 lignes de code pour rester lisible et maintenable.</p>
+
+<!-- ═══ PATTERN : OBJECTIFS ═══ -->
+<h2>VIII. Objectifs de la Modularité</h2>
+
+<p>La décomposition en fonctions vise à rendre le code plus lisible, plus facile à tester et plus facile à maintenir.</p>
+
+<p>L'encapsulation a pour objectif de cacher les détails d'implémentation et d'exposer uniquement une interface claire.</p>
+
+<p>La réutilisabilité afin de permettre d'appeler une même fonction depuis plusieurs endroits du programme sans dupliquer le code.</p>
+
+<!-- ═══ PATTERN : REMARQUES / NB ═══ -->
+<h2>IX. Notes et Remarques Importantes</h2>
+
+<p><strong>Remarque :</strong> une fonction peut appeler une autre fonction, ce qui crée une chaîne d'appels imbriqués.</p>
+
+<p><strong>Attention :</strong> les variables locales sont détruites automatiquement à la fin de l'exécution de la fonction.</p>
+
+<p><strong>NB :</strong> le nombre de paramètres d'une fonction est appelé son <em>arité</em>. Une fonction sans paramètre a une arité de 0.</p>
+
+<p><strong>Important :</strong> en algorithmique, les paramètres formels sont ceux définis dans la signature, tandis que les paramètres effectifs sont ceux passés lors de l'appel.</p>
+
+<!-- ═══ PATTERN : LOCALISATION ═══ -->
+<h2>X. Portée et Localisation des Variables</h2>
+
+<p>Une variable locale se trouve à l'intérieur du corps de la fonction qui la déclare.</p>
+
+<p>Les variables globales se situent en dehors de toute fonction, généralement au début du programme principal.</p>
+
+<p>La pile d'appels est localisée dans la mémoire RAM, dans une zone réservée appelée <em>stack</em>.</p>
+
+
+</body>
+</html>

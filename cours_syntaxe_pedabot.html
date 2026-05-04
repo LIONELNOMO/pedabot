@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Cours Syntaxe PédaBot — Patterns de Détection de Blocs de Code</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 860px; margin: 40px auto; padding: 20px; line-height: 1.8; color: #1a1a1a; }
+    h1 { color: #1E52C4; border-bottom: 3px solid #1E52C4; padding-bottom: 8px; }
+    h2 { color: #2B6BE6; margin-top: 40px; }
+    h3 { color: #1a3a8c; margin-top: 24px; font-size: 15px; }
+    code { background: #f4f4f4; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
+    pre { background: #f4f4f4; padding: 16px; border-radius: 8px; border-left: 4px solid #2B6BE6; font-family: monospace; white-space: pre; }
+    .pattern-tag { display: inline-block; background: #1E52C4; color: #fff; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 4px; margin-bottom: 6px; letter-spacing: 0.05em; }
+    .note { background: #fffbe6; border-left: 4px solid #f59e0b; padding: 12px 16px; border-radius: 4px; margin: 16px 0; }
+    .detected { background: #e8f5e9; border-left: 4px solid #43a047; padding: 10px 14px; border-radius: 4px; margin: 10px 0; font-size: 13px; }
+    hr { margin: 50px 0; border-color: #CBD5E1; }
+    table { border-collapse: collapse; width: 100%; margin: 16px 0; }
+    th { background: #1E52C4; color: #fff; padding: 8px 12px; text-align: left; font-size: 13px; }
+    td { border: 1px solid #CBD5E1; padding: 8px 12px; font-size: 13px; }
+    tr:nth-child(even) td { background: #f8fafc; }
+  </style>
+</head>
+<body>
+
+<h1>Cours — Patterns de Syntaxe Algorithmique</h1>
+<p>Ce cours couvre les <strong>6 nouveaux patterns de détection de blocs de syntaxe</strong> intégrés dans PédaBot.
+Chaque section contient le type de bloc détectable, les marqueurs regex utilisés, et des exemples de phrases
+que le chatbot reconnaîtra pour générer des exercices de <strong>production algorithmique contextuels</strong>.</p>
+
+<div class="note">
+  <strong>Comment utiliser ce fichier :</strong> Copiez le contenu d'une section (titre + paragraphes)
+  dans PédaBot pour tester la détection. Le chatbot doit générer un exercice de production
+  (pas juste une question de cours) basé sur la syntaxe détectée.
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- PATTERN 26 : BOUCLE POUR / FOR                         -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>I. La Boucle POUR — Répétition à nombre fixe</h2>
+<span class="pattern-tag">PATTERN 26 — BOUCLE_POUR</span>
+
+<p>La syntaxe de la boucle POUR s'écrit de la manière suivante en algorithmique :</p>
+
+<pre>
+POUR i DE 1 À N FAIRE
+    &lt;instructions&gt;
+FIN POUR
+</pre>
+
+<p>On utilise la boucle POUR lorsque le nombre de répétitions est connu à l'avance.
+La variable de contrôle <code>i</code> est incrémentée automatiquement à chaque tour de boucle.</p>
+
+<p>Voici un exemple concret d'utilisation de la boucle POUR :</p>
+
+<pre>
+POUR i DE 1 À 10 FAIRE
+    Écrire(i)
+FIN POUR
+</pre>
+
+<p>En Python, cette même boucle s'écrit avec <code>for i in range(1, 11):</code>.
+En JavaScript, on utilise <code>for (let i = 1; i &lt;= 10; i++)</code>.</p>
+
+<div class="detected">
+  <strong>Marqueurs détectés par PédaBot :</strong><br>
+  — <code>POUR i DE ... À ... FAIRE</code> / <code>FIN POUR</code><br>
+  — <code>for i in range(</code><br>
+  — <code>for (let i =</code><br>
+  — Titre de section contenant : "boucle pour", "boucle for", "répétition fixe", "nombre de fois"
+</div>
+
+<h3>Exemples de phrases déclencheuses</h3>
+<p>La boucle POUR permet de répéter un bloc d'instructions un nombre défini de fois.</p>
+<p>La syntaxe <code>POUR i DE 1 À N FAIRE</code> est utilisée quand le compteur est connu dès le départ.</p>
+<p>On écrit une boucle for en Python avec <code>for i in range(n):</code> pour parcourir N éléments.</p>
+<p>La structure <code>for (let i = 0; i &lt; n; i++)</code> est la syntaxe JavaScript de la boucle à compteur.</p>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- PATTERN 27 : BOUCLE TANT QUE / WHILE                   -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>II. La Boucle TANT QUE — Répétition conditionnelle</h2>
+<span class="pattern-tag">PATTERN 27 — BOUCLE_TANTQUE</span>
+
+<p>La structure TANT QUE est une boucle dont la condition est évaluée <strong>avant</strong> chaque itération.
+Si la condition est fausse dès le départ, le corps n'est jamais exécuté.</p>
+
+<pre>
+TANT QUE condition FAIRE
+    &lt;instructions&gt;
+FIN TANT QUE
+</pre>
+
+<p>En Python, la boucle TANT QUE s'écrit avec le mot-clé <code>while</code> :</p>
+
+<pre>
+while condition:
+    instructions
+</pre>
+
+<p>L'inconvénient principal de la boucle TANT QUE est le risque de boucle infinie
+si la condition n'est jamais rendue fausse à l'intérieur du corps.</p>
+
+<div class="detected">
+  <strong>Marqueurs détectés par PédaBot :</strong><br>
+  — <code>TANT QUE ... FAIRE</code> / <code>FIN TANT QUE</code><br>
+  — <code>while condition:</code><br>
+  — <code>while (condition)</code><br>
+  — Titre de section contenant : "tant que", "while", "boucle conditionnelle", "répétition conditionnelle"
+</div>
+
+<h3>Exemples de phrases déclencheuses</h3>
+<p>La boucle TANT QUE répète les instructions tant que la condition reste vraie.</p>
+<p>On utilise <code>while n != 0:</code> pour continuer la saisie jusqu'à ce que l'utilisateur entre 0.</p>
+<p>La syntaxe <code>TANT QUE réponse != 'oui' FAIRE</code> permet d'attendre une réponse valide.</p>
+<p>En JavaScript, <code>while (x &gt; 0)</code> continue tant que x est positif.</p>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- PATTERN 28 : RÉPÉTER JUSQU'À / DO WHILE               -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>III. La Boucle RÉPÉTER JUSQU'À — Exécution garantie</h2>
+<span class="pattern-tag">PATTERN 28 — BOUCLE_REPETER</span>
+
+<p>La boucle RÉPÉTER JUSQU'À garantit qu'au moins une exécution du corps aura lieu,
+car la condition d'arrêt est évaluée <strong>après</strong> chaque itération.</p>
+
+<pre>
+RÉPÉTER
+    &lt;instructions&gt;
+JUSQU'À condition_arrêt
+</pre>
+
+<p>En JavaScript, l'équivalent est la boucle <code>do...while</code> :</p>
+
+<pre>
+do {
+    instructions;
+} while (condition);
+</pre>
+
+<p>On utilise RÉPÉTER JUSQU'À principalement pour la validation de saisie utilisateur,
+car on doit toujours afficher le message au moins une fois avant de vérifier la valeur entrée.</p>
+
+<div class="detected">
+  <strong>Marqueurs détectés par PédaBot :</strong><br>
+  — <code>RÉPÉTER</code> + <code>JUSQU'À</code><br>
+  — <code>do {</code> + <code>} while (</code><br>
+  — Titre de section contenant : "répéter jusqu'à", "do while", "boucle post-condition"
+</div>
+
+<h3>Exemples de phrases déclencheuses</h3>
+<p>La boucle RÉPÉTER JUSQU'À exécute le corps au moins une fois avant de tester la condition.</p>
+<p>On utilise <code>RÉPÉTER ... JUSQU'À n &gt; 0</code> pour forcer l'utilisateur à saisir une valeur positive.</p>
+<p>La syntaxe <code>do { ... } while (choix != 0)</code> est idéale pour un menu interactif en JavaScript.</p>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- PATTERN 29 : ALTERNATIVE SI / SINON                    -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>IV. L'Alternative SI / SINON — Prise de décision</h2>
+<span class="pattern-tag">PATTERN 29 — ALTERNATIVE_SI</span>
+
+<p>La structure conditionnelle SI/SINON permet de choisir entre deux blocs d'instructions
+selon qu'une condition est vraie ou fausse.</p>
+
+<pre>
+SI condition ALORS
+    &lt;bloc si vrai&gt;
+SINON
+    &lt;bloc si faux&gt;
+FIN SI
+</pre>
+
+<p>On peut aussi imbriquer des conditions avec <strong>SINON SI</strong> pour gérer plusieurs cas :</p>
+
+<pre>
+SI note &gt;= 16 ALORS
+    Écrire("Très bien")
+SINON SI note &gt;= 10 ALORS
+    Écrire("Passable")
+SINON
+    Écrire("Insuffisant")
+FIN SI
+</pre>
+
+<p>En Python, cela s'écrit avec <code>if</code>, <code>elif</code> et <code>else</code>.
+En JavaScript, on utilise <code>if (...) { } else if (...) { } else { }</code>.</p>
+
+<div class="detected">
+  <strong>Marqueurs détectés par PédaBot :</strong><br>
+  — <code>SI ... ALORS</code> / <code>SINON</code> / <code>FIN SI</code><br>
+  — <code>if ... elif ... else</code><br>
+  — <code>if (...) { } else { }</code><br>
+  — Titre de section contenant : "alternative", "si sinon", "condition", "if else", "structure conditionnelle"
+</div>
+
+<h3>Exemples de phrases déclencheuses</h3>
+<p>La structure <code>SI condition ALORS ... SINON ... FIN SI</code> permet d'exécuter deux blocs différents.</p>
+<p>On utilise <code>if note &gt;= 10:</code> pour afficher "Admis" et <code>else:</code> pour afficher "Échec".</p>
+<p>L'alternative <code>if (x % 2 == 0)</code> permet de tester si un nombre est pair ou impair en JavaScript.</p>
+<p>Avec SINON SI, on peut gérer plusieurs cas : très bien, bien, passable, insuffisant.</p>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- PATTERN 30 : DÉCLARATION DE FONCTION / PROCÉDURE       -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>V. Les Fonctions et Procédures — Modularité</h2>
+<span class="pattern-tag">PATTERN 30 — DECLARATION_FONCTION</span>
+
+<p>Une fonction est un sous-programme qui retourne une valeur.
+Une procédure est un sous-programme qui effectue des actions sans retourner de valeur.</p>
+
+<p>La syntaxe d'une fonction en algorithmique est la suivante :</p>
+
+<pre>
+FONCTION nomFonction(paramètre1 : Type, paramètre2 : Type) : TypeRetour
+    VARIABLE résultat : TypeRetour
+    DÉBUT
+        &lt;instructions&gt;
+        RETOURNER résultat
+    FIN
+</pre>
+
+<p>En Python, on déclare une fonction avec le mot-clé <code>def</code> :</p>
+
+<pre>
+def nom_fonction(param1, param2):
+    # instructions
+    return résultat
+</pre>
+
+<p>En JavaScript, la déclaration utilise le mot-clé <code>function</code> :</p>
+
+<pre>
+function nomFonction(param1, param2) {
+    // instructions
+    return résultat;
+}
+</pre>
+
+<div class="detected">
+  <strong>Marqueurs détectés par PédaBot :</strong><br>
+  — <code>FONCTION nom(</code> / <code>PROCÉDURE nom(</code> + <code>RETOURNER</code><br>
+  — <code>def nom_fonction(</code><br>
+  — <code>function nom(</code><br>
+  — Titre de section contenant : "fonction", "procédure", "sous-programme", "def", "modularité"
+</div>
+
+<h3>Exemples de phrases déclencheuses</h3>
+<p>La syntaxe <code>FONCTION calculerMoyenne(notes : Tableau) : Réel</code> déclare une fonction qui retourne un réel.</p>
+<p>En Python, on écrit <code>def calculer_moyenne(notes):</code> pour déclarer une fonction de calcul.</p>
+<p>Une procédure se déclare avec <code>PROCÉDURE afficherResultat(note : Réel)</code> sans valeur de retour.</p>
+<p>Le mot-clé <code>function somme(a, b) { return a + b; }</code> déclare une fonction en JavaScript.</p>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- PATTERN 31 : TABLEAU / ARRAY                           -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>VI. Les Tableaux — Structures de Données Indexées</h2>
+<span class="pattern-tag">PATTERN 31 — TABLEAU_ARRAY</span>
+
+<p>Un tableau est une structure de données permettant de stocker plusieurs valeurs
+du même type accessibles par un indice (ou index).</p>
+
+<p>La déclaration d'un tableau en algorithmique :</p>
+
+<pre>
+VARIABLE notes : TABLEAU[0..N-1] DE Réel
+</pre>
+
+<p>Pour parcourir tous les éléments d'un tableau, on combine tableau et boucle POUR :</p>
+
+<pre>
+POUR i DE 0 À N-1 FAIRE
+    Écrire(notes[i])
+FIN POUR
+</pre>
+
+<p>En Python, un tableau s'appelle une <strong>liste</strong> et se déclare ainsi :</p>
+
+<pre>
+notes = []          # liste vide
+notes = [0] * N     # liste de N zéros
+notes.append(val)   # ajouter un élément
+</pre>
+
+<p>En JavaScript, on utilise la syntaxe :</p>
+
+<pre>
+let notes = [];
+let notes = new Array(N);
+notes.push(val);
+</pre>
+
+<div class="detected">
+  <strong>Marqueurs détectés par PédaBot :</strong><br>
+  — <code>TABLEAU[0..N]</code> / <code>T[i]</code> / <code>notes[i]</code><br>
+  — <code>[] * N</code> / <code>.append(</code> / <code>.push(</code><br>
+  — <code>new Array(</code><br>
+  — Titre de section contenant : "tableau", "array", "liste", "indice", "index", "parcours de tableau"
+</div>
+
+<h3>Exemples de phrases déclencheuses</h3>
+<p>Un tableau se déclare avec <code>VARIABLE T : TABLEAU[0..9] DE Entier</code> pour stocker 10 entiers.</p>
+<p>On accède à l'élément d'indice <code>i</code> avec la notation <code>T[i]</code>.</p>
+<p>En Python, on crée une liste de 5 zéros avec <code>notes = [0] * 5</code>.</p>
+<p>Le parcours d'un tableau se fait en combinant <code>POUR i DE 0 À N-1 FAIRE</code> avec <code>Écrire(T[i])</code>.</p>
+<p>En JavaScript, <code>let scores = new Array(10)</code> crée un tableau de 10 cases.</p>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- PATTERN 32 : COMPARAISON / CONTRASTE                   -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<hr>
+<h2>VII. Comparaison et Contraste entre Concepts</h2>
+<span class="pattern-tag">PATTERN 32 — COMPARAISON</span>
+
+<p>On compare deux structures selon leur mode de fonctionnement.
+La boucle POUR s'utilise quand le nombre d'itérations est connu à l'avance,
+<strong>tandis que</strong> la boucle TANT QUE s'utilise quand ce nombre dépend d'une condition.</p>
+
+<p><strong>Contrairement à</strong> la boucle TANT QUE qui peut ne jamais s'exécuter,
+la boucle RÉPÉTER JUSQU'À garantit au moins une exécution du corps.</p>
+
+<p>Une fonction retourne une valeur, <strong>à l'opposé</strong> d'une procédure qui effectue
+une action sans retourner de résultat.</p>
+
+<p>Le passage par valeur copie la donnée, <strong>par opposition au</strong> passage par référence
+qui transmet directement l'adresse mémoire de la variable.</p>
+
+<p><strong>Comparé à</strong> un algorithme de tri en O(n²), le tri rapide est bien plus efficace
+avec une complexité en O(n log n) en moyenne.</p>
+
+<div class="detected">
+  <strong>Marqueurs détectés par PédaBot :</strong><br>
+  — <code>tandis que</code>, <code>alors que</code>, <code>contrairement à</code><br>
+  — <code>à l'opposé de</code>, <code>par opposition à</code>, <code>en revanche</code><br>
+  — <code>différence entre</code>, <code>comparé à</code>, <code>par rapport à</code>, <code>vs</code>
+</div>
+
+<h3>Exemples de phrases déclencheuses</h3>
+<p>La boucle POUR est préférable, <strong>tandis que</strong> TANT QUE s'impose quand la condition est dynamique.</p>
+<p><strong>Contrairement à</strong> Python qui indente par espaces, JavaScript utilise des accolades.</p>
+<p>Une variable locale est détruite à la fin de la fonction, <strong>alors que</strong> la globale persiste.</p>
+<p>Le tableau est statique, <strong>par opposition à</strong> la liste dynamique qui peut grandir.</p>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- PATTERN 33 : ERREURS / PIÈGES                          -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>VIII. Erreurs Fréquentes et Pièges à Éviter</h2>
+<span class="pattern-tag">PATTERN 33 — ERREUR_PIEGE</span>
+
+<p>Une <strong>erreur courante</strong> est d'oublier d'initialiser la variable de contrôle avant une boucle TANT QUE,
+ce qui produit un comportement imprévisible au premier tour.</p>
+
+<p><strong>Attention à ne pas</strong> confondre l'opérateur d'affectation <code>←</code> avec l'opérateur de comparaison <code>=</code>.
+Cette <strong>erreur typique</strong> provoque des bugs difficiles à détecter.</p>
+
+<p>Un <strong>piège fréquent</strong> chez les débutants est d'écrire <code>POUR i DE 1 À N</code> au lieu de
+<code>POUR i DE 0 À N-1</code> pour parcourir un tableau de taille N, causant un dépassement d'indice.</p>
+
+<p><strong>Ne pas confondre</strong> les paramètres formels (dans la signature) et les paramètres effectifs
+(lors de l'appel) est une <strong>erreur à éviter</strong> absolument pour comprendre le passage de paramètres.</p>
+
+<p>Une <strong>faute courante</strong> avec la récursivité est d'oublier le cas de base,
+ce qui conduit à un appel infini et un débordement de pile.</p>
+
+<div class="detected">
+  <strong>Marqueurs détectés par PédaBot :</strong><br>
+  — <code>erreur courante / fréquente / typique / classique</code><br>
+  — <code>piège fréquent / courant</code>, <code>attention à ne pas</code><br>
+  — <code>ne pas confondre</code>, <code>erreur à éviter</code>, <code>faute courante</code>
+</div>
+
+<h3>Exemples de phrases déclencheuses</h3>
+<p>Une <strong>erreur courante</strong> est d'utiliser <code>=</code> au lieu de <code>==</code> pour tester l'égalité.</p>
+<p><strong>Attention à ne pas</strong> modifier la variable de contrôle à l'intérieur d'une boucle POUR.</p>
+<p>Un <strong>piège fréquent</strong> : oublier le <code>FIN TANT QUE</code> provoque une erreur de syntaxe.</p>
+<p><strong>Ne pas confondre</strong> la taille d'un tableau (N) et son dernier indice valide (N-1).</p>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- PATTERN 34 : TRACE D'EXÉCUTION                         -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>IX. Trace d'Exécution et Suivi de Variables</h2>
+<span class="pattern-tag">PATTERN 34 — TRACE_EXECUTION</span>
+
+<p>Pour comprendre une boucle, on peut construire un <strong>tableau de trace</strong> qui suit
+l'évolution des variables à chaque itération.</p>
+
+<p>Lors du <strong>déroulement pas à pas</strong> de l'algorithme suivant, on observe
+comment la variable <code>somme</code> évolue :</p>
+
+<pre>
+i = 1 : somme = 0 + 1 = 1
+i = 2 : somme = 1 + 2 = 3
+i = 3 : somme = 3 + 3 = 6
+</pre>
+
+<p><strong>À l'itération 3</strong>, la valeur de <code>somme</code> vaut 6.
+Ce type de <strong>trace d'exécution</strong> permet de vérifier qu'un algorithme produit bien le résultat attendu.</p>
+
+<p>Les <strong>valeurs successives</strong> de la variable <code>i</code> dans une boucle <code>POUR i DE 1 À 5</code>
+sont : 1, 2, 3, 4, 5. <strong>Après exécution</strong>, la variable <code>i</code> vaut 6 (dernière valeur tentée).</p>
+
+<p>L'<strong>état du programme</strong> après chaque instruction peut être représenté dans un tableau
+avec une colonne par variable et une ligne par étape.</p>
+
+<div class="detected">
+  <strong>Marqueurs détectés par PédaBot :</strong><br>
+  — <code>tableau de trace</code>, <code>trace d'exécution</code><br>
+  — <code>déroulement pas à pas</code>, <code>valeurs successives</code><br>
+  — <code>à l'itération N</code>, <code>après exécution</code>, <code>état du programme</code>
+</div>
+
+<h3>Exemples de phrases déclencheuses</h3>
+<p>Le <strong>tableau de trace</strong> montre l'état de chaque variable à chaque tour de boucle.</p>
+<p>Effectuons un <strong>déroulement pas à pas</strong> pour N=4 : i=1, somme=1 ; i=2, somme=3…</p>
+<p><strong>À l'itération 2</strong>, la valeur de <code>max</code> devient 7 car T[2]=7 > max=3.</p>
+<p>Les <strong>valeurs successives</strong> de <code>compteur</code> sont 0, 1, 2, 3 puis la boucle s'arrête.</p>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- PATTERN 35 : ENTRÉES / SORTIES                         -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>X. Entrées et Sorties d'un Algorithme</h2>
+<span class="pattern-tag">PATTERN 35 — ENTREE_SORTIE</span>
+
+<p>Tout algorithme ou fonction peut être décrit par son <strong>contrat d'interface</strong> :
+ce qu'il <strong>prend en entrée</strong> et ce qu'il <strong>retourne en sortie</strong>.</p>
+
+<p>La fonction <code>Moyenne</code> <strong>prend en entrée</strong> un tableau de réels et un entier N,
+et <strong>retourne en sortie</strong> un réel correspondant à la moyenne calculée.</p>
+
+<pre>
+Entrée  : notes (Tableau de Réel), N (Entier)
+Sortie  : moyenne (Réel)
+</pre>
+
+<p>Les <strong>données d'entrée</strong> d'un algorithme de tri sont un tableau non ordonné.
+La <strong>valeur retournée</strong> est ce même tableau trié dans l'ordre croissant.</p>
+
+<p>Lorsque la fonction ne <strong>retourne</strong> aucune valeur (procédure), on note
+<strong>Sortie : aucune</strong> ou on utilise le type <code>VOID</code>.</p>
+
+<div class="detected">
+  <strong>Marqueurs détectés par PédaBot :</strong><br>
+  — <code>prend en entrée</code>, <code>retourne en sortie</code>, <code>données d'entrée</code><br>
+  — <code>valeur de retour</code>, <code>résultat retourné</code>, <code>paramètres d'entrée</code><br>
+  — <code>Entrée :</code>, <code>Sortie :</code>
+</div>
+
+<h3>Exemples de phrases déclencheuses</h3>
+<p>La fonction Maximum <strong>prend en entrée</strong> un tableau T et sa taille N.</p>
+<p>Elle <strong>retourne en sortie</strong> la valeur la plus grande contenue dans T.</p>
+<p>Les <strong>données d'entrée</strong> sont validées avant d'être traitées par l'algorithme.</p>
+<p>La <strong>valeur retournée</strong> par Factorielle(5) est 120.</p>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- PATTERN 36 : PRÉCONDITIONS / POSTCONDITIONS            -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>XI. Préconditions et Postconditions</h2>
+<span class="pattern-tag">PATTERN 36 — PRECONDITION</span>
+
+<p>Une <strong>précondition</strong> est une condition que les données d'entrée doivent respecter
+pour que l'algorithme produise un résultat correct.</p>
+
+<p>La fonction Division(a, b) <strong>garantit un résultat correct à condition que</strong> b ≠ 0.
+Si cette <strong>précondition</strong> n'est pas respectée, le résultat est indéfini.</p>
+
+<p>La fonction RacineCarre(n) impose comme <strong>précondition</strong> que n ≥ 0,
+car la racine carrée d'un nombre négatif n'est pas définie dans les réels.</p>
+
+<p>Une <strong>postcondition</strong> décrit ce que l'algorithme <strong>garantit que</strong> le résultat vérifie
+après son exécution. Par exemple : "le tableau retourné est trié dans l'ordre croissant".</p>
+
+<p>Le <strong>contrat</strong> d'une fonction est l'ensemble de ses préconditions et postconditions.
+<strong>Sous réserve que</strong> les préconditions soient vérifiées, les postconditions sont garanties.</p>
+
+<div class="detected">
+  <strong>Marqueurs détectés par PédaBot :</strong><br>
+  — <code>précondition</code>, <code>postcondition</code>, <code>contrat de</code><br>
+  — <code>à condition que</code>, <code>sous réserve que</code><br>
+  — <code>garantit que</code>, <code>assure que</code>
+</div>
+
+<h3>Exemples de phrases déclencheuses</h3>
+<p>La <strong>précondition</strong> de TriRapide est que le tableau ne soit pas vide (N &gt; 0).</p>
+<p>L'algorithme <strong>garantit que</strong> le résultat est le plus grand élément du tableau.</p>
+<p>Cette fonction est valide <strong>à condition que</strong> tous les éléments soient positifs.</p>
+<p>Le <strong>contrat</strong> de la fonction Moyenne stipule que N doit être strictement supérieur à 0.</p>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- PATTERN 37 : CONVERSION ENTRE LANGAGES                 -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>XII. Conversion entre Langages Algorithmiques</h2>
+<span class="pattern-tag">PATTERN 37 — CONVERSION_LANGAGE</span>
+
+<p>La même logique algorithmique peut être exprimée dans plusieurs langages.
+L'<strong>équivalent en Python</strong> de la boucle <code>POUR i DE 1 À N FAIRE</code>
+est <code>for i in range(1, N+1):</code>.</p>
+
+<p>La structure <code>SI condition ALORS ... SINON ... FIN SI</code>
+<strong>se traduit en JavaScript</strong> par <code>if (condition) { ... } else { ... }</code>.</p>
+
+<pre>
+Algorithmique              Python                  JavaScript
+─────────────────────────────────────────────────────────────
+POUR i DE 1 À N FAIRE    for i in range(1,N+1):  for(let i=1;i<=N;i++){
+    Écrire(i)                 print(i)                console.log(i);
+FIN POUR                                          }
+</pre>
+
+<p>La déclaration <code>FONCTION Carre(n : Entier) : Entier</code>
+correspond <strong>en Python</strong> à <code>def carre(n):</code> suivi d'un <code>return n*n</code>.
+<strong>La même chose en JavaScript</strong> s'écrit <code>function carre(n) { return n*n; }</code>.</p>
+
+<div class="detected">
+  <strong>Marqueurs détectés par PédaBot :</strong><br>
+  — <code>équivalent en Python / JavaScript / algorithmique</code><br>
+  — <code>s'écrit en Python</code>, <code>se traduit en JavaScript</code><br>
+  — <code>la même chose en</code>, <code>correspond en</code><br>
+  — Présence simultanée de blocs algo + Python ou algo + JavaScript
+</div>
+
+<h3>Exemples de phrases déclencheuses</h3>
+<p>L'<strong>équivalent en Python</strong> de <code>TANT QUE n != 0 FAIRE</code> est <code>while n != 0:</code>.</p>
+<p>La boucle <code>RÉPÉTER...JUSQU'À</code> se <strong>traduit en JavaScript</strong> par <code>do { } while ()</code>.</p>
+<p>Le mot-clé <code>RETOURNER</code> <strong>correspond en Python</strong> à l'instruction <code>return</code>.</p>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- PATTERN 38 : COMPLEXITÉ / EFFICACITÉ                   -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>XIII. Complexité et Efficacité des Algorithmes</h2>
+<span class="pattern-tag">PATTERN 38 — COMPLEXITE</span>
+
+<p>La <strong>complexité algorithmique</strong> mesure le coût d'un algorithme en temps ou en mémoire
+en fonction de la taille N des données traitées.</p>
+
+<p>Un algorithme avec deux boucles imbriquées sur N éléments a une <strong>complexité O(n²)</strong>.
+C'est bien <strong>moins efficace que</strong> un algorithme en O(n log n) pour de grandes valeurs de N.</p>
+
+<p>La recherche séquentielle dans un tableau non trié a une <strong>complexité en temps</strong> de O(n)
+car dans le pire cas on parcourt tous les éléments.</p>
+
+<p>Le tri par sélection est <strong>moins efficace</strong> que le tri rapide pour des tableaux de grande taille,
+car son <strong>nombre d'opérations</strong> croît en O(n²) contre O(n log n) en moyenne pour le tri rapide.</p>
+
+<p>Un algorithme est dit <strong>optimal</strong> quand aucun autre algorithme ne peut résoudre
+le même problème avec un <strong>coût en mémoire</strong> ou en temps moindre.</p>
+
+<div class="detected">
+  <strong>Marqueurs détectés par PédaBot :</strong><br>
+  — <code>complexité O(n)</code>, <code>O(n²)</code>, <code>O(log n)</code>, <code>O(1)</code><br>
+  — <code>plus efficace que</code>, <code>moins efficace</code>, <code>algorithme optimal</code><br>
+  — <code>nombre d'opérations</code>, <code>coût en mémoire</code>, <code>complexité en temps</code>
+</div>
+
+<h3>Exemples de phrases déclencheuses</h3>
+<p>La recherche dichotomique a une <strong>complexité O(log n)</strong>, bien meilleure que la recherche linéaire en O(n).</p>
+<p>Cet algorithme est <strong>plus efficace que</strong> le précédent car il évite les comparaisons redondantes.</p>
+<p>Le <strong>nombre d'opérations</strong> d'un tri à bulles est proportionnel à n².</p>
+<p>Un tableau trié permet une recherche en O(log n) au lieu de O(n), ce qui est <strong>plus optimal</strong>.</p>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- PATTERN 39 : RÈGLE ABSOLUE / PRINCIPE                  -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>XIV. Règles Absolues et Principes Fondamentaux</h2>
+<span class="pattern-tag">PATTERN 39 — REGLE_ABSOLUE</span>
+
+<p><strong>Il faut toujours</strong> initialiser une variable avant de l'utiliser dans un calcul.
+Ne pas le faire est une source d'erreurs imprévisibles selon le langage utilisé.</p>
+
+<p><strong>On ne doit jamais</strong> modifier l'indice d'une boucle POUR à l'intérieur de son corps,
+car cela perturbe le mécanisme automatique d'incrémentation.</p>
+
+<p>Le <strong>principe fondamental</strong> de la modularité stipule qu'une fonction ne doit faire
+qu'une seule chose et la faire bien — règle aussi appelée principe de responsabilité unique.</p>
+
+<p><strong>Toujours vérifier</strong> qu'un diviseur est non nul avant d'effectuer une division
+est une règle de bonne pratique qui évite les erreurs d'exécution fatales.</p>
+
+<p>La <strong>règle d'or</strong> de la récursivité est : toute fonction récursive doit posséder
+un cas de base atteignable qui arrête les appels récursifs.</p>
+
+<div class="detected">
+  <strong>Marqueurs détectés par PédaBot :</strong><br>
+  — <code>il faut toujours</code>, <code>on ne doit jamais</code>, <code>ne jamais</code><br>
+  — <code>principe fondamental</code>, <code>règle d'or</code>, <code>règle de base</code><br>
+  — <code>toujours vérifier / initialiser / s'assurer</code>, <code>interdit de</code>
+</div>
+
+<h3>Exemples de phrases déclencheuses</h3>
+<p><strong>Il faut toujours</strong> fermer une boucle avec son mot-clé de fin (<code>FIN POUR</code>, <code>FIN TANT QUE</code>).</p>
+<p><strong>On ne doit jamais</strong> supposer qu'une variable est automatiquement initialisée à zéro.</p>
+<p>Le <strong>principe fondamental</strong> des boucles est que la condition doit finir par devenir fausse.</p>
+<p><strong>Toujours s'assurer</strong> que l'indice de tableau est compris entre 0 et N-1 inclus.</p>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- PATTERN 40 : SCHÉMA / REPRÉSENTATION GRAPHIQUE         -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<h2>XV. Schémas et Représentations Graphiques</h2>
+<span class="pattern-tag">PATTERN 40 — SCHEMA</span>
+
+<p>Un <strong>organigramme</strong> est une représentation graphique d'un algorithme.
+<strong>Le schéma montre</strong> le flux d'exécution avec des symboles standardisés :
+losange pour les décisions, rectangle pour les traitements.</p>
+
+<p><strong>Comme le montre le diagramme</strong> suivant, l'exécution d'une boucle TANT QUE
+peut être représentée par un cycle avec une condition de sortie :</p>
+
+<pre>
+  ┌─────────────────┐
+  │  Initialisation │
+  └────────┬────────┘
+           ↓
+    [Condition vraie?] ──Non──→ Fin
+           │ Oui
+           ↓
+    ┌─────────────┐
+    │    Corps    │
+    └──────┬──────┘
+           │
+           └──────────────────↑
+</pre>
+
+<p>La <strong>représentation graphique</strong> d'un tableau peut être vue comme une suite de cases
+numérotées de 0 à N-1, chaque case contenant une valeur.</p>
+
+<p><strong>La figure illustre</strong> comment la mémoire alloue les variables locales dans la pile d'appels,
+et les variables globales dans le tas. Ce <strong>diagramme de mémoire</strong> aide à comprendre
+la portée des variables.</p>
+
+<div class="detected">
+  <strong>Marqueurs détectés par PédaBot :</strong><br>
+  — <code>le schéma montre</code>, <code>comme le montre le diagramme</code><br>
+  — <code>représentation graphique</code>, <code>organigramme</code><br>
+  — <code>la figure illustre</code>, <code>diagramme de</code>, <code>représenté par le schéma</code>
+</div>
+
+<h3>Exemples de phrases déclencheuses</h3>
+<p><strong>Le schéma montre</strong> les trois structures de contrôle et leurs conditions d'utilisation.</p>
+<p>Un <strong>organigramme</strong> représente visuellement le déroulement d'un algorithme.</p>
+<p><strong>Comme le montre le diagramme</strong>, la boucle revient en arrière si la condition est vraie.</p>
+<p>La <strong>représentation graphique</strong> de la pile d'appels aide à comprendre la récursivité.</p>
+
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- TABLEAU RÉCAPITULATIF COMPLET                          -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<hr>
+<h2>Tableau Récapitulatif — 15 Patterns (26 à 40)</h2>
+
+<table>
+  <tr>
+    <th>N°</th>
+    <th>Pattern</th>
+    <th>Marqueurs clés détectés</th>
+    <th>Exercice généré (exemple)</th>
+  </tr>
+  <tr>
+    <td>26</td>
+    <td><strong>BOUCLE_POUR</strong></td>
+    <td><code>POUR i DE ... À ... FAIRE</code>, <code>for i in range(</code>, <code>for (let i =</code></td>
+    <td>Écrire un algo qui demande 5 notes et affiche la moyenne</td>
+  </tr>
+  <tr>
+    <td>27</td>
+    <td><strong>BOUCLE_TANTQUE</strong></td>
+    <td><code>TANT QUE ... FAIRE</code>, <code>while condition:</code>, <code>while (</code></td>
+    <td>Écrire un algo qui lit des entiers jusqu'à la saisie de 0</td>
+  </tr>
+  <tr>
+    <td>28</td>
+    <td><strong>BOUCLE_REPETER</strong></td>
+    <td><code>RÉPÉTER ... JUSQU'À</code>, <code>do { } while (</code></td>
+    <td>Écrire un algo qui force la saisie d'un nombre entre 1 et 100</td>
+  </tr>
+  <tr>
+    <td>29</td>
+    <td><strong>ALTERNATIVE_SI</strong></td>
+    <td><code>SI ... ALORS ... SINON</code>, <code>if ... elif ... else</code></td>
+    <td>Écrire un algo qui classe une note en Admis / Échec / Mention</td>
+  </tr>
+  <tr>
+    <td>30</td>
+    <td><strong>DECLARATION_FONCTION</strong></td>
+    <td><code>FONCTION nom(</code>, <code>def nom(</code>, <code>function nom(</code></td>
+    <td>Écrire une fonction qui calcule le carré d'un entier</td>
+  </tr>
+  <tr>
+    <td>31</td>
+    <td><strong>TABLEAU_ARRAY</strong></td>
+    <td><code>TABLEAU[0..N]</code>, <code>T[i]</code>, <code>.append(</code>, <code>new Array(</code></td>
+    <td>Écrire un algo qui remplit un tableau et affiche le maximum</td>
+  </tr>
+  <tr>
+    <td>32</td>
+    <td><strong>COMPARAISON</strong></td>
+    <td><code>contrairement à</code>, <code>tandis que</code>, <code>à l'opposé de</code>, <code>par opposition à</code></td>
+    <td>Comparer POUR et TANT QUE — 2 différences et 1 point commun</td>
+  </tr>
+  <tr>
+    <td>33</td>
+    <td><strong>ERREUR_PIEGE</strong></td>
+    <td><code>erreur courante</code>, <code>piège fréquent</code>, <code>attention à ne pas</code>, <code>ne pas confondre</code></td>
+    <td>Identifier et corriger l'erreur dans ce code</td>
+  </tr>
+  <tr>
+    <td>34</td>
+    <td><strong>TRACE_EXECUTION</strong></td>
+    <td><code>tableau de trace</code>, <code>déroulement pas à pas</code>, <code>à l'itération N</code>, <code>valeurs successives</code></td>
+    <td>Compléter le tableau de trace pour i = 1, 2, 3, 4</td>
+  </tr>
+  <tr>
+    <td>35</td>
+    <td><strong>ENTREE_SORTIE</strong></td>
+    <td><code>prend en entrée</code>, <code>retourne en sortie</code>, <code>données d'entrée</code>, <code>Entrée :</code></td>
+    <td>Identifier les entrées et sorties de la fonction donnée</td>
+  </tr>
+  <tr>
+    <td>36</td>
+    <td><strong>PRECONDITION</strong></td>
+    <td><code>précondition</code>, <code>postcondition</code>, <code>à condition que</code>, <code>garantit que</code></td>
+    <td>Énoncer les préconditions et postconditions de l'algorithme</td>
+  </tr>
+  <tr>
+    <td>37</td>
+    <td><strong>CONVERSION_LANGAGE</strong></td>
+    <td><code>équivalent en Python</code>, <code>se traduit en</code>, <code>correspond en JavaScript</code></td>
+    <td>Traduire l'algorithme en Python / JavaScript</td>
+  </tr>
+  <tr>
+    <td>38</td>
+    <td><strong>COMPLEXITE</strong></td>
+    <td><code>complexité O(n)</code>, <code>plus efficace que</code>, <code>nombre d'opérations</code></td>
+    <td>Quelle est la complexité ? Proposer une version optimisée</td>
+  </tr>
+  <tr>
+    <td>39</td>
+    <td><strong>REGLE_ABSOLUE</strong></td>
+    <td><code>il faut toujours</code>, <code>on ne doit jamais</code>, <code>principe fondamental</code></td>
+    <td>Énoncer la règle et donner un exemple où on l'enfreint</td>
+  </tr>
+  <tr>
+    <td>40</td>
+    <td><strong>SCHEMA</strong></td>
+    <td><code>le schéma montre</code>, <code>organigramme</code>, <code>représentation graphique</code></td>
+    <td>Décrire / légender le schéma ou le reproduire de mémoire</td>
+  </tr>
+</table>
+
+<div class="note">
+  <strong>Ordre de priorité dans PédaBot :</strong><br>
+  1. Patterns syntaxiques (26-31) — blocs de code détectés<br>
+  2. Patterns analytiques (32-40) — marqueurs textuels d'analyse<br>
+  3. Patterns textuels classiques (1-25) — définitions, causes, exemples…
+</div>
+
+<!-- ═══════════════════════════════════════════════════════ -->
+<!-- ANCIEN TABLEAU (conservé pour référence)               -->
+<!-- ═══════════════════════════════════════════════════════ -->
+<hr>
+<h2>Rappel — Patterns Syntaxiques 26-31 (détail)</h2>
+
+<table>
+  <tr>
+    <th>N°</th>
+    <th>Pattern</th>
+    <th>Marqueurs clés détectés</th>
+    <th>Exercice généré (exemple)</th>
+  </tr>
+  <tr>
+    <td>26</td>
+    <td><strong>BOUCLE_POUR</strong></td>
+    <td><code>POUR i DE ... À ... FAIRE</code>, <code>for i in range(</code>, <code>for (let i =</code></td>
+    <td>Écrire un algo qui demande 5 notes et affiche la moyenne</td>
+  </tr>
+  <tr>
+    <td>27</td>
+    <td><strong>BOUCLE_TANTQUE</strong></td>
+    <td><code>TANT QUE ... FAIRE</code>, <code>while condition:</code>, <code>while (</code></td>
+    <td>Écrire un algo qui lit des entiers jusqu'à ce que l'utilisateur saisisse 0</td>
+  </tr>
+  <tr>
+    <td>28</td>
+    <td><strong>BOUCLE_REPETER</strong></td>
+    <td><code>RÉPÉTER ... JUSQU'À</code>, <code>do { } while (</code></td>
+    <td>Écrire un algo qui force la saisie d'un nombre entre 1 et 100</td>
+  </tr>
+  <tr>
+    <td>29</td>
+    <td><strong>ALTERNATIVE_SI</strong></td>
+    <td><code>SI ... ALORS ... SINON</code>, <code>if ... elif ... else</code>, <code>if (...) else</code></td>
+    <td>Écrire un algo qui classe une note en Admis / Échec / Mention</td>
+  </tr>
+  <tr>
+    <td>30</td>
+    <td><strong>DECLARATION_FONCTION</strong></td>
+    <td><code>FONCTION nom(</code>, <code>def nom(</code>, <code>function nom(</code></td>
+    <td>Écrire une fonction qui calcule le carré d'un entier et la tester</td>
+  </tr>
+  <tr>
+    <td>31</td>
+    <td><strong>TABLEAU_ARRAY</strong></td>
+    <td><code>TABLEAU[0..N]</code>, <code>T[i]</code>, <code>[] * N</code>, <code>new Array(</code></td>
+    <td>Écrire un algo qui remplit un tableau de 10 notes et affiche la plus grande</td>
+  </tr>
+</table>
+
+<div class="note">
+  <strong>Règle de priorité dans PédaBot :</strong> Ces 6 patterns sont testés <strong>en premier</strong>,
+  avant les patterns textuels (définitions, causes…). Si un bloc de syntaxe est présent dans la section,
+  il prime sur tout autre pattern pour générer un exercice de production algorithmique.
+</div>
+
+</body>
+</html>

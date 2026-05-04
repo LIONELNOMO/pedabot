@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 
 // ══════════════════════════════════════
@@ -6,14 +6,23 @@ import { useApp } from '../context/AppContext';
 //  React ne fait aucune logique d'analyse !
 // ══════════════════════════════════════
 
-const API_URL = 'https://pedabot6backend.onrender.com';
+const API_URL = import.meta.env.VITE_API_URL;
 
 export default function Sidebar() {
-  const { setStep, addMessage, wizardDraft, setWizardDraft } = useApp();
+  const { setStep, addMessage, wizardDraft, setWizardDraft, step } = useApp();
   const [activeTab, setActiveTab] = useState('saisir');
   const [courseText, setCourseText] = useState('');
   const [isAnalyzed, setIsAnalyzed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Quand resetSession remet step à IDLE, on réinitialise la sidebar
+  useEffect(() => {
+    if (step === 'IDLE') {
+      setCourseText('');
+      setIsAnalyzed(false);
+      setActiveTab('saisir');
+    }
+  }, [step]);
 
   const analyzeCourse = async () => {
     if (courseText.trim().length < 20) {
@@ -79,11 +88,40 @@ export default function Sidebar() {
     }
   };
 
-  const handleFileUpload = (e) => {
+  const [isExtracting, setIsExtracting] = useState(false);
+  const [extractError, setExtractError] = useState('');
+
+  const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    setCourseText(`I. Introduction — ${file.name}\nContenu extrait automatiquement depuis le fichier.\n\nII. Concepts principaux\nSection principale du cours importé.\n\nIII. Exercices et applications\nExemples pratiques et cas d'usage.`);
-    setActiveTab('saisir');
+
+    setIsExtracting(true);
+    setExtractError('');
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await fetch(`${API_URL}/api/extract`, {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setExtractError(data.detail || 'Erreur lors de l\'extraction.');
+        return;
+      }
+
+      setCourseText(data.text);
+      setActiveTab('saisir');
+    } catch (err) {
+      setExtractError('Impossible de contacter le serveur. Vérifiez que le backend tourne.');
+    } finally {
+      setIsExtracting(false);
+      e.target.value = '';
+    }
   };
 
   return (
@@ -110,12 +148,17 @@ export default function Sidebar() {
         </div>
         
         <div style={{ display: activeTab === 'import' ? 'block' : 'none' }}>
-          <label className="upload-zone" style={{ display: 'block' }}>
-            <div className="uz-icon">⊕</div>
-            <div className="uz-text">Cliquer pour importer</div>
-            <div className="uz-hint">PDF, Word (.docx) — max 10 Mo</div>
-            <input type="file" accept=".pdf,.docx,.doc,.txt" style={{ display: 'none' }} onChange={handleFileUpload} />
+          <label className="upload-zone" style={{ display: 'block', opacity: isExtracting ? 0.6 : 1, pointerEvents: isExtracting ? 'none' : 'auto' }}>
+            <div className="uz-icon">{isExtracting ? '◌' : '⊕'}</div>
+            <div className="uz-text">{isExtracting ? 'Extraction en cours…' : 'Cliquer pour importer'}</div>
+            <div className="uz-hint">PDF, Word (.docx), TXT — max 10 Mo</div>
+            <input type="file" accept=".pdf,.docx,.txt" style={{ display: 'none' }} onChange={handleFileUpload} disabled={isExtracting} />
           </label>
+          {extractError && (
+            <div style={{ marginTop: '8px', padding: '8px 12px', background: 'var(--error-bg, #fff0f0)', color: 'var(--error, #c0392b)', borderRadius: '8px', fontSize: '13px' }}>
+              ⚠️ {extractError}
+            </div>
+          )}
         </div>
 
         {isAnalyzed && (

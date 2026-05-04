@@ -2,7 +2,7 @@ import React from 'react';
 import { useApp } from '../context/AppContext';
 
 export default function RightPanel() {
-  const { wizardDraft, toggleAppro, step, messages } = useApp();
+  const { wizardDraft, step, messages, resetSession } = useApp();
 
   // Stats dynamiques
   const exCount = wizardDraft.exCount || 0;
@@ -17,7 +17,7 @@ export default function RightPanel() {
   else if (step === 'WAIT_SECTIONS') { progressPct = 40; progressTxt = 'Sélection des sections'; tipTxt = 'Sélectionnez les parties sur lesquelles les élèves ont le plus besoin de consolidation.'; }
   else if (step === 'WAIT_DIFF') { progressPct = 60; progressTxt = 'Niveau de difficulté'; tipTxt = 'Le niveau "Progressif" combine reconnaissance, complétion et production autonome.'; }
   else if (step === 'WAIT_CONFIRM') { progressPct = 80; progressTxt = 'Validation'; tipTxt = 'Vérifiez le récapitulatif avant de lancer la génération.'; }
-  else if (step === 'DONE') { progressPct = 100; progressTxt = 'Exercices générés'; tipTxt = 'Cliquez "Approfondir" sur un exercice pour en générer une version plus complexe.'; }
+  else if (step === 'DONE') { progressPct = 100; progressTxt = 'Exercices générés'; tipTxt = 'Exportez vos exercices en PDF ou démarrez une nouvelle session.'; }
 
   const handleExportPDF = () => {
     // Collect exercises from messages
@@ -100,20 +100,6 @@ export default function RightPanel() {
 
   return (
     <aside className="rpanel">
-      {/* Approfondissement */}
-      <div>
-        <div className="rp-sec-title">Mode de génération</div>
-        <button className={`appro-toggle ${wizardDraft.appro ? 'on' : ''}`} onClick={toggleAppro}>
-          <div className="appro-trow">
-            <span className="appro-tname">Approfondissement</span>
-            <div className="tpill"></div>
-          </div>
-          <div className="appro-tdesc">Active des exercices complexes avec cas limites et défis bonus</div>
-        </button>
-      </div>
-
-      <div className="rp-divider"></div>
-
       {/* Stats réactives */}
       <div>
         <div className="rp-sec-title">Session en cours</div>
@@ -159,6 +145,19 @@ export default function RightPanel() {
           <line x1="12" y1="15" x2="12" y2="3"/>
         </svg>
         Exporter en PDF
+      </button>
+
+      {/* Nouvelle session */}
+      <button
+        className={`export-btn ${step === 'DONE' ? '' : 'hidden'}`}
+        onClick={resetSession}
+        style={{ marginTop: '8px', background: 'transparent', border: '1.5px solid var(--border)', color: 'var(--text-2)' }}
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="1 4 1 10 7 10"/>
+          <path d="M3.51 15a9 9 0 1 0 .49-4.95"/>
+        </svg>
+        Nouvelle session
       </button>
     </aside>
   );

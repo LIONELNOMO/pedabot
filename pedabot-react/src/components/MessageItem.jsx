@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { useApp } from '../context/AppContext';
 
-const API_URL = 'https://pedabot6backend.onrender.com';
+const API_URL = import.meta.env.VITE_API_URL;
 
 // ══════════════════════════════════════
 //  SOUS-COMPOSANTS (un par type interactif)
-//  Chaque composant a ses propres hooks au top level
+//  React ne fait aucune logique d'analyse !
 // ══════════════════════════════════════
 
 // ----- MESSAGE TEXTE / HTML -----
@@ -52,7 +52,7 @@ function SectionsMessage({ msg }) {
     setConfirmed(true);
     const chosen = msg.sections.filter((_, i) => checkedIdxs.includes(i));
     setWizardDraft(prev => ({ ...prev, selSections: chosen }));
-    
+
     addMessage({ type: 'typing', sender: 'bot' });
     setTimeout(() => {
       addMessage({ type: 'difficulty', sender: 'bot' });
@@ -69,9 +69,9 @@ function SectionsMessage({ msg }) {
         <div className="chklist">
           {msg.sections.map((s, i) => (
             <label key={i} className="chkitem">
-              <input 
-                type="checkbox" 
-                checked={checkedIdxs.includes(i)} 
+              <input
+                type="checkbox"
+                checked={checkedIdxs.includes(i)}
                 onChange={() => toggleCheck(i)}
                 disabled={confirmed}
               />
@@ -97,7 +97,7 @@ function DifficultyMessage() {
     setSelected(key);
     setWizardDraft(prev => ({ ...prev, difficulty: key }));
     addMessage({ type: 'text', sender: 'user', text: label });
-    
+
     addMessage({ type: 'typing', sender: 'bot' });
     setTimeout(() => {
       setStep('WAIT_CONFIRM');
@@ -122,8 +122,8 @@ function DifficultyMessage() {
         quel niveau de difficulté souhaitez-vous ?
         <div className="bbtns">
           {diffs.map(d => (
-            <button 
-              key={d.key} 
+            <button
+              key={d.key}
               className={`bbtn ${selected === d.key ? 'sel' : ''}`}
               title={d.desc}
               onClick={() => pickDiff(d.key, d.label)}
@@ -143,7 +143,7 @@ function RecapMessage() {
   const { setStep, wizardDraft, addMessage, setWizardDraft } = useApp();
   const [confirmed, setConfirmed] = useState(false);
 
-  const secList = wizardDraft.selSections 
+  const secList = wizardDraft.selSections
     ? wizardDraft.selSections.map(s => `${s.num ? s.num + ' — ' : ''}${s.title}`).join(', ')
     : '—';
   const langLabel = wizardDraft.lang === 'algo' ? 'Algorithmique' : wizardDraft.lang === 'python' ? 'Python' : 'JavaScript';
@@ -158,7 +158,7 @@ function RecapMessage() {
       exName: wizardDraft.exName,
       difficulty: wizardDraft.difficulty,
       lang: wizardDraft.lang,
-      appro: wizardDraft.appro,
+      appro: false,
       sections: wizardDraft.selSections
     };
 
@@ -177,13 +177,13 @@ function RecapMessage() {
       setWizardDraft(prev => ({ ...prev, exCount, secCount }));
 
       addMessage({ type: 'text', sender: 'bot', text: `★ <strong>${exCount} exercice${exCount > 1 ? 's' : ''}</strong> générés pour <em>"${wizardDraft.exName}"</em> !`, html: true });
-      
+
       if (data.exercises) {
         data.exercises.forEach(ex => {
           addMessage({ type: 'exercise', sender: 'bot', exercise: ex });
         });
       }
-      addMessage({ type: 'text', sender: 'bot', text: `✓ Terminé ! Cliquez sur <strong>"Approfondir"</strong> sur un exercice pour en générer une version plus complexe.`, html: true });
+      addMessage({ type: 'text', sender: 'bot', text: `✓ Terminé ! Exportez vos exercices en PDF depuis le panneau de droite.`, html: true });
     })
     .catch(err => {
       console.error("Erreur Backend Python:", err);
@@ -203,7 +203,6 @@ function RecapMessage() {
       <div className="mavatar bot">PB</div>
       <div className="mbubble">
         ≡ <strong>Récapitulatif avant génération</strong>
-        {wizardDraft.appro && <span style={{background:'var(--primary-100)', color:'var(--primary)', padding:'2px 8px', borderRadius:'5px', fontSize:'11px', fontWeight:700, marginLeft:'8px'}}>+ APPROFONDISSEMENT</span>}
         <br/><br/>
         <strong>Nom :</strong> {wizardDraft.exName}<br/>
         <strong>Sections :</strong> {secList}<br/>
@@ -219,42 +218,11 @@ function RecapMessage() {
   );
 }
 
-// ----- EXERCISE CARD (Approfondir → appel Python /api/deepen) -----
+// ----- EXERCISE CARD -----
 function ExerciseMessage({ msg }) {
-  const { addMessage, wizardDraft } = useApp();
   const { exercise } = msg;
   const lvlClass = exercise.level === 'facile' ? 'easy' : exercise.level === 'moyen' ? 'med' : 'hard';
   const lvlLabel = exercise.level === 'facile' ? 'Niveau Facile' : exercise.level === 'moyen' ? 'Niveau Moyen' : 'Niveau Avancé';
-  const [loadingAppro, setLoadingAppro] = useState(false);
-  const [isAppro, setIsAppro] = useState(false);
-
-  const handleAppro = async () => {
-    setLoadingAppro(true);
-
-    try {
-      // ══════ APPEL PYTHON : /api/deepen ══════
-      const res = await fetch(`${API_URL}/api/deepen`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          exerciseTitle: exercise.title,
-          lang: wizardDraft.lang
-        })
-      });
-
-      const data = await res.json();
-      setLoadingAppro(false);
-      setIsAppro(true);
-
-      if (data.exercise) {
-        addMessage({ type: 'exercise', sender: 'bot', exercise: data.exercise });
-      }
-    } catch (err) {
-      console.error('Erreur approfondissement:', err);
-      setLoadingAppro(false);
-      addMessage({ type: 'text', sender: 'bot', text: '⚠️ Erreur lors de l\'approfondissement.', html: false });
-    }
-  };
 
   return (
     <div className="mrow bot">
@@ -264,9 +232,6 @@ function ExerciseMessage({ msg }) {
         <div className="extitle">{exercise.title}</div>
         <div className="exbody" dangerouslySetInnerHTML={{__html: exercise.body}}></div>
         {exercise.code && <div className="excode">{exercise.code}</div>}
-        <button className="appro-btn" disabled={loadingAppro || isAppro} onClick={handleAppro}>
-          {loadingAppro ? '◌ Génération en cours…' : isAppro ? '✓ Version approfondie ci-dessous' : '+ Approfondir cet exercice'}
-        </button>
       </div>
     </div>
   );
@@ -277,7 +242,7 @@ function ExerciseMessage({ msg }) {
 // ══════════════════════════════════════
 export default function MessageItem({ msg }) {
   const { user } = useApp();
-  
+
   const isBot = msg.sender === 'bot';
   const initial = isBot ? 'PB' : (user || 'P').substring(0, 2).toUpperCase();
 

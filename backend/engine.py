@@ -159,23 +159,33 @@ def _clean_keyword(kw: str) -> str:
     kw = re.sub(r'\s+', ' ', kw)
     # Retirer article résiduel en début
     kw = re.sub(r"^(?:un|une|le|la|l[''']|les|des|du|d[''']|ce|cette|ces)\s+", '', kw, flags=re.IGNORECASE)
+    # Retirer mots parasites fréquents en début
+    kw = re.sub(r"^(?:autre|autres|principal|principale|seul|seule|même|premier|première)\s+", '', kw, flags=re.IGNORECASE)
+    # Tronquer si trop long (garder max 5 mots)
+    words = kw.split()
+    if len(words) > 5:
+        kw = ' '.join(words[:5])
     return kw.strip()
 
 
 def _build_question(keyword: str, sentence: str) -> str:
-    """Formule 'Qu'est-ce qu'un/une [keyword] ?' avec le bon article."""
+    """Formule 'Qu'est-ce que/qu'un/une [keyword] ?' avec le bon article."""
     s_low = sentence.lower()
     kw_low = keyword.lower()
     first = kw_low[0] if kw_low else ''
     vowel = first in 'aeéèêëiïîoôuùûyh'
 
-    # Chercher si le cours utilisait "une" → féminin
+    # Détecter le genre depuis la phrase source
     if re.search(rf'\bune\s+{re.escape(kw_low)}', s_low):
-        return f"Qu'est-ce qu'une {keyword} ?" if vowel else f"Qu'est-ce qu'une {keyword} ?"
-    # Masculin ou voyelle
-    if vowel:
-        return f"Qu'est-ce qu'un {keyword} ?"
-    return f"Qu'est-ce qu'un {keyword} ?"
+        article = "une "
+    elif re.search(rf"\bl['']{re.escape(kw_low)}", s_low) or vowel:
+        article = "l'" if vowel else "le "
+    else:
+        article = "la " if re.search(rf'\bla\s+{re.escape(kw_low)}', s_low) else "un "
+
+    if article in ("l'", "l'"):
+        return f"Qu'est-ce que l'{keyword} ?"
+    return f"Qu'est-ce que {article}{keyword} ?"
 
 
 def detect_definitions(text: str) -> list[dict]:
@@ -195,7 +205,7 @@ def detect_definitions(text: str) -> list[dict]:
         # ── TYPE A : mot-clé AVANT le marqueur ──
         found = False
         for marker in _MARKERS_BEFORE:
-            pattern = rf"({_ART}.+?)\s+{marker}"
+            pattern = rf"({_ART}[\w''éèêëàâùûîïôœç]+(?:\s+[\w''éèêëàâùûîïôœç]+){{0,3}})\s+{marker}"
             m = re.search(pattern, s, re.IGNORECASE)
             if m:
                 raw = m.group(1).strip()
@@ -317,7 +327,7 @@ def detect_causes(text: str) -> list[dict]:
         if len(s) < 15:
             continue
         for marker in _CAUSE_MARKERS:
-            pattern = rf"({_ART}.+?)\s+{marker}"
+            pattern = rf"({_ART}[\w''éèêëàâùûîïôœç]+(?:\s+[\w''éèêëàâùûîïôœç]+){0,3})\s+{marker}"
             m = re.search(pattern, s, re.IGNORECASE)
             if m:
                 kw = _clean_keyword(m.group(1))
@@ -370,7 +380,7 @@ def detect_consequences(text: str) -> list[dict]:
         if len(s) < 15:
             continue
         for marker in _CONSEQUENCE_MARKERS:
-            pattern = rf"({_ART}.+?)\s+{marker}"
+            pattern = rf"({_ART}[\w''éèêëàâùûîïôœç]+(?:\s+[\w''éèêëàâùûîïôœç]+){0,3})\s+{marker}"
             m = re.search(pattern, s, re.IGNORECASE)
             if m:
                 kw = _clean_keyword(m.group(1))
@@ -423,7 +433,7 @@ def detect_etapes(text: str) -> list[dict]:
         if len(s) < 20:
             continue
         for marker in _ETAPE_MARKERS:
-            m = re.search(rf"({_ART}.+?)\s+{marker}", s, re.IGNORECASE)
+            m = re.search(rf"({_ART}[\w''éèêëàâùûîïôœç]+(?:\s+[\w''éèêëàâùûîïôœç]+){0,3})\s+{marker}", s, re.IGNORECASE)
             if m:
                 kw = _clean_keyword(m.group(1))
                 if 1 <= len(kw.split()) <= 6 and kw.lower() not in seen:
@@ -482,7 +492,7 @@ def detect_caracteristiques(text: str) -> list[dict]:
         s = s.strip()
         if len(s) < 15: continue
         for marker in _CARACT_MARKERS:
-            m = re.search(rf"({_ART}.+?)\s+{marker}", s, re.IGNORECASE)
+            m = re.search(rf"({_ART}[\w''éèêëàâùûîïôœç]+(?:\s+[\w''éèêëàâùûîïôœç]+){0,3})\s+{marker}", s, re.IGNORECASE)
             if m:
                 kw = _clean_keyword(m.group(1))
                 if 1 <= len(kw.split()) <= 6 and kw.lower() not in seen:
@@ -520,7 +530,7 @@ def detect_fonctions(text: str) -> list[dict]:
         s = s.strip()
         if len(s) < 15: continue
         for marker in _FONCTION_MARKERS:
-            m = re.search(rf"({_ART}.+?)\s+{marker}", s, re.IGNORECASE)
+            m = re.search(rf"({_ART}[\w''éèêëàâùûîïôœç]+(?:\s+[\w''éèêëàâùûîïôœç]+){0,3})\s+{marker}", s, re.IGNORECASE)
             if m:
                 kw = _clean_keyword(m.group(1))
                 if 1 <= len(kw.split()) <= 6 and kw.lower() not in seen:
@@ -557,7 +567,7 @@ def detect_exemples(text: str) -> list[dict]:
         s = s.strip()
         if len(s) < 15: continue
         for marker in _EXEMPLE_MARKERS:
-            m = re.search(rf"({_ART}.+?)\s+{marker}", s, re.IGNORECASE)
+            m = re.search(rf"({_ART}[\w''éèêëàâùûîïôœç]+(?:\s+[\w''éèêëàâùûîïôœç]+){0,3})\s+{marker}", s, re.IGNORECASE)
             if m:
                 kw = _clean_keyword(m.group(1))
                 if 1 <= len(kw.split()) <= 6 and kw.lower() not in seen:
@@ -677,7 +687,7 @@ def detect_classifications(text: str) -> list[dict]:
         for marker in _CLASSIF_MARKERS:
             m = re.search(rf"(?:{marker})\s+(?:de\s+|d['''])?(.+?)(?:\s*:|\s+qui|\.+)", s, re.IGNORECASE)
             if not m:
-                m = re.search(rf"({_ART}.+?)\s+(?:{marker})", s, re.IGNORECASE)
+                m = re.search(rf"({_ART}[\w''éèêëàâùûîïôœç]+(?:\s+[\w''éèêëàâùûîïôœç]+){0,3})\s+(?:{marker})", s, re.IGNORECASE)
             if m:
                 kw = _clean_keyword(m.group(1))
                 if 1 <= len(kw.split()) <= 6 and kw.lower() not in seen:
@@ -710,7 +720,7 @@ def detect_conditions(text: str) -> list[dict]:
         for marker in _CONDITION_MARKERS:
             m = re.search(rf"Pour\s+(?:que\s+)?(.+?)(?:,?\s+{marker}|,?\s+il\s+faut)", s, re.IGNORECASE)
             if not m:
-                m = re.search(rf"({_ART}.+?)\s+{marker}", s, re.IGNORECASE)
+                m = re.search(rf"({_ART}[\w''éèêëàâùûîïôœç]+(?:\s+[\w''éèêëàâùûîïôœç]+){0,3})\s+{marker}", s, re.IGNORECASE)
             if m:
                 kw = _clean_keyword(m.group(1))
                 if 1 <= len(kw.split()) <= 6 and kw.lower() not in seen:
@@ -747,7 +757,7 @@ def detect_acteurs(text: str) -> list[dict]:
                     seen.add(name.lower())
                     concept = "ce concept"
                     if "découvert par" in s.lower() or "proposé" in s.lower():
-                        c_match = re.search(rf"({_ART}.+?)\s+(?:a\s+été\s+|(?:est\s+))?(?:découvert|proposé)", s, re.IGNORECASE)
+                        c_match = re.search(rf"({_ART}[\w''éèêëàâùûîïôœç]+(?:\s+[\w''éèêëàâùûîïôœç]+){0,3})\s+(?:a\s+été\s+|(?:est\s+))?(?:découvert|proposé)", s, re.IGNORECASE)
                         if c_match:
                             concept = _clean_keyword(c_match.group(1))
                     results.append({"keyword": name, "question": f"Qui a découvert / proposé {concept} ?", "sentence": s})
@@ -776,7 +786,7 @@ def detect_formules(text: str) -> list[dict]:
         s = s.strip()
         if len(s) < 15: continue
         for marker in _FORMULE_MARKERS:
-            m = re.search(rf"({_ART}.+?)\s+(?:{marker})", s, re.IGNORECASE)
+            m = re.search(rf"({_ART}[\w''éèêëàâùûîïôœç]+(?:\s+[\w''éèêëàâùûîïôœç]+){0,3})\s+(?:{marker})", s, re.IGNORECASE)
             if m:
                 kw = _clean_keyword(m.group(1))
                 if 1 <= len(kw.split()) <= 6 and kw.lower() not in seen:
@@ -804,7 +814,7 @@ def detect_chiffres(text: str) -> list[dict]:
         s = s.strip()
         if len(s) < 15: continue
         for marker in _CHIFFRE_MARKERS:
-            m = re.search(rf"({_ART}.+?)\s+(?:{marker})", s, re.IGNORECASE)
+            m = re.search(rf"({_ART}[\w''éèêëàâùûîïôœç]+(?:\s+[\w''éèêëàâùûîïôœç]+){0,3})\s+(?:{marker})", s, re.IGNORECASE)
             if not m:
                 m = re.search(rf"{marker}\s+(?:de\s+)?(.+?)\b", s, re.IGNORECASE)
             if m:
@@ -836,7 +846,7 @@ def detect_localisations(text: str) -> list[dict]:
         s = s.strip()
         if len(s) < 15: continue
         for marker in _LOC_MARKERS:
-            m = re.search(rf"({_ART}.+?)\s+(?:{marker})", s, re.IGNORECASE)
+            m = re.search(rf"({_ART}[\w''éèêëàâùûîïôœç]+(?:\s+[\w''éèêëàâùûîïôœç]+){0,3})\s+(?:{marker})", s, re.IGNORECASE)
             if m:
                 kw = _clean_keyword(m.group(1))
                 if 1 <= len(kw.split()) <= 6 and kw.lower() not in seen:
@@ -868,7 +878,7 @@ def detect_compositions(text: str) -> list[dict]:
         s = s.strip()
         if len(s) < 15: continue
         for marker in _COMPO_MARKERS:
-            m = re.search(rf"({_ART}.+?)\s+(?:{marker})", s, re.IGNORECASE)
+            m = re.search(rf"({_ART}[\w''éèêëàâùûîïôœç]+(?:\s+[\w''éèêëàâùûîïôœç]+){0,3})\s+(?:{marker})", s, re.IGNORECASE)
             if m:
                 kw = _clean_keyword(m.group(1))
                 if 1 <= len(kw.split()) <= 6 and kw.lower() not in seen:
@@ -932,7 +942,7 @@ def detect_exceptions(text: str) -> list[dict]:
         for marker in _EXCEPT_MARKERS:
             if re.search(rf"\b{marker}\b", s, re.IGNORECASE):
                 kw = "cette règle"
-                m = re.search(rf"({_ART}.+?)\s+(?:_|sauf|excepté)", s, re.IGNORECASE)
+                m = re.search(rf"({_ART}[\w''éèêëàâùûîïôœç]+(?:\s+[\w''éèêëàâùûîïôœç]+){0,3})\s+(?:_|sauf|excepté)", s, re.IGNORECASE)
                 if m: kw = _clean_keyword(m.group(1))
                 if kw.lower() not in seen:
                     seen.add(kw.lower())
@@ -961,7 +971,7 @@ def detect_objectifs(text: str) -> list[dict]:
         s = s.strip()
         if len(s) < 15: continue
         for marker in _OBJECTIF_MARKERS:
-            m = re.search(rf"({_ART}.+?)\s+(?:{marker})", s, re.IGNORECASE)
+            m = re.search(rf"({_ART}[\w''éèêëàâùûîïôœç]+(?:\s+[\w''éèêëàâùûîïôœç]+){0,3})\s+(?:{marker})", s, re.IGNORECASE)
             if not m:
                 m = re.search(rf"(?:{marker})\s+(.+?)(?:\s*,|\.+)", s, re.IGNORECASE)
                 if m:
@@ -1117,10 +1127,649 @@ def detect_traductions(text: str) -> list[dict]:
             results.append({"keyword": kw, "question": f"Comment traduit-on {kw} en langage code ?", "sentence": s})
     return results
 
+# ══════════════════════════════════════════════════════════════
+#  PATTERNS 26-31 — DÉTECTION DE BLOCS DE SYNTAXE
+#  Priorité maximale : priment sur tous les autres patterns
+# ══════════════════════════════════════════════════════════════
+
+def detect_syntaxe_pour(text: str) -> list[dict]:
+    """Détecte un bloc de boucle POUR / for dans le texte."""
+    patterns = [
+        r'POUR\s+\w+\s+DE\s+.+\s+(?:À|A)\s+.+\s+FAIRE',
+        r'for\s+\w+\s+in\s+range\s*\(',
+        r'for\s*\(let\s+\w+\s*=',
+        r'for\s*\(int\s+\w+\s*=',
+        r'for\s*\(var\s+\w+\s*=',
+        r'FIN\s+POUR',
+    ]
+    for p in patterns:
+        if re.search(p, text, re.IGNORECASE):
+            return [{"keyword": "boucle POUR", "question": "Écrire un algorithme utilisant une boucle POUR", "sentence": text[:200]}]
+    title_low = text.split('.')[0].lower()
+    if re.search(r'boucle\s+pour|boucle\s+for|répétition\s+fixe|compteur|nombre\s+de\s+fois', title_low):
+        return [{"keyword": "boucle POUR", "question": "Écrire un algorithme utilisant une boucle POUR", "sentence": text[:200]}]
+    return []
+
+
+def detect_syntaxe_tantque(text: str) -> list[dict]:
+    """Détecte un bloc TANT QUE / while dans le texte."""
+    patterns = [
+        r'TANT\s+QUE\s+.+\s+FAIRE',
+        r'FIN\s+TANT\s+QUE',
+        r'while\s+\w+.*:',
+        r'while\s*\(.+\)\s*\{',
+    ]
+    for p in patterns:
+        if re.search(p, text, re.IGNORECASE):
+            return [{"keyword": "boucle TANT QUE", "question": "Écrire un algorithme utilisant une boucle TANT QUE", "sentence": text[:200]}]
+    title_low = text.split('.')[0].lower()
+    if re.search(r'tant\s+que|while|boucle\s+condition|répétition\s+condition', title_low):
+        return [{"keyword": "boucle TANT QUE", "question": "Écrire un algorithme utilisant une boucle TANT QUE", "sentence": text[:200]}]
+    return []
+
+
+def detect_syntaxe_repeter(text: str) -> list[dict]:
+    """Détecte un bloc RÉPÉTER JUSQU'À / do-while dans le texte."""
+    patterns = [
+        r"RÉPÉTER",
+        r"JUSQU[''']À",
+        r'do\s*\{',
+        r'\}\s*while\s*\(',
+    ]
+    matched = sum(1 for p in patterns if re.search(p, text, re.IGNORECASE))
+    if matched >= 1:
+        title_low = text.split('.')[0].lower()
+        if re.search(r"répéter|jusqu[''']à|do.while|post.condition|saisie\s+valid", title_low) or matched >= 2:
+            return [{"keyword": "boucle RÉPÉTER JUSQU'À", "question": "Écrire un algorithme utilisant une boucle RÉPÉTER JUSQU'À", "sentence": text[:200]}]
+    return []
+
+
+def detect_syntaxe_si(text: str) -> list[dict]:
+    """Détecte un bloc SI/SINON / if-else dans le texte."""
+    patterns = [
+        r'SI\s+.+\s+ALORS',
+        r'FIN\s+SI',
+        r'SINON\s+SI',
+        r'if\s+.+:',
+        r'elif\s+',
+        r'if\s*\(.+\)\s*\{',
+        r'else\s+if\s*\(',
+    ]
+    for p in patterns:
+        if re.search(p, text, re.IGNORECASE):
+            return [{"keyword": "structure SI/SINON", "question": "Écrire un algorithme utilisant une alternative SI/SINON", "sentence": text[:200]}]
+    title_low = text.split('.')[0].lower()
+    if re.search(r'alternative|si\s+sinon|if\s+else|structure\s+conditionnelle|prise\s+de\s+décision', title_low):
+        return [{"keyword": "structure SI/SINON", "question": "Écrire un algorithme utilisant une alternative SI/SINON", "sentence": text[:200]}]
+    return []
+
+
+def detect_syntaxe_fonction(text: str) -> list[dict]:
+    """Détecte une déclaration de fonction / procédure dans le texte."""
+    patterns = [
+        r'FONCTION\s+\w+\s*\(',
+        r'PROCÉDURE\s+\w+\s*\(',
+        r'PROCEDURE\s+\w+\s*\(',
+        r'RETOURNER\s+',
+        r'def\s+\w+\s*\(',
+        r'function\s+\w+\s*\(',
+    ]
+    for p in patterns:
+        if re.search(p, text, re.IGNORECASE):
+            return [{"keyword": "fonction/procédure", "question": "Écrire et appeler une fonction", "sentence": text[:200]}]
+    title_low = text.split('.')[0].lower()
+    if re.search(r'fonction|procédure|sous-programme|def |modularité|retourner', title_low):
+        return [{"keyword": "fonction/procédure", "question": "Écrire et appeler une fonction", "sentence": text[:200]}]
+    return []
+
+
+def detect_syntaxe_tableau(text: str) -> list[dict]:
+    """Détecte une déclaration ou utilisation de tableau / array dans le texte."""
+    patterns = [
+        r'TABLEAU\s*\[',
+        r'\w+\s*\[\s*\d+\s*\.\.\s*\d*',
+        r'\w+\s*\[\s*i\s*\]',
+        r'\[\s*\]\s*\*\s*\d+',
+        r'\.append\s*\(',
+        r'\.push\s*\(',
+        r'new\s+Array\s*\(',
+    ]
+    for p in patterns:
+        if re.search(p, text, re.IGNORECASE):
+            return [{"keyword": "tableau/liste", "question": "Écrire un algorithme utilisant un tableau", "sentence": text[:200]}]
+    title_low = text.split('.')[0].lower()
+    if re.search(r'\btableau\b|array|\bliste\b|indice|index|parcours\s+de', title_low):
+        return [{"keyword": "tableau/liste", "question": "Écrire un algorithme utilisant un tableau", "sentence": text[:200]}]
+    return []
+
+
+# ══════════════════════════════════════════════════════════════
+#  PATTERNS 32-40 — ANALYSE, COMPARAISON, RÈGLES
+#  Priorité 2 : après syntaxe, avant patterns textuels classiques
+# ══════════════════════════════════════════════════════════════
+
+def detect_comparaison(text: str) -> list[dict]:
+    markers = [
+        r"contrairement\s+à",
+        r"à\s+l[''']opposé\s+de",
+        r"tandis\s+que",
+        r"alors\s+que",
+        r"par\s+opposition\s+à",
+        r"en\s+revanche",
+        r"différence\s+entre",
+        r"comparé\s+à",
+        r"par\s+rapport\s+à",
+        r"\bvs\b|\bversus\b",
+    ]
+    for marker in markers:
+        m = re.search(marker, text, re.IGNORECASE)
+        if m:
+            before = text[:m.start()].strip().split()[-5:]
+            kw = ' '.join(before).strip('.,;:') or sec_title_from(text)
+            return [{"keyword": _clean_keyword(kw), "question": f"Comparez les deux éléments mentionnés.", "sentence": text[:300]}]
+    return []
+
+
+def detect_erreur_piege(text: str) -> list[dict]:
+    markers = [
+        r"erreur\s+(?:courante|fréquente|typique|classique|commune|à\s+éviter)",
+        r"piège\s+(?:fréquent|courant|classique)",
+        r"attention\s+à\s+ne\s+pas",
+        r"ne\s+pas\s+confondre",
+        r"faute\s+(?:courante|fréquente|classique)",
+        r"risque\s+d[''']erreur",
+    ]
+    for marker in markers:
+        m = re.search(marker, text, re.IGNORECASE)
+        if m:
+            after = text[m.end():m.end()+80].strip().split('.')[0]
+            kw = _clean_keyword(after[:40]) or "cette règle"
+            return [{"keyword": kw, "question": f"Identifiez et corrigez l'erreur décrite.", "sentence": text[:300]}]
+    return []
+
+
+def detect_trace_execution(text: str) -> list[dict]:
+    markers = [
+        r"tableau\s+de\s+(?:trace|valeurs|suivi)",
+        r"trace\s+d[''']exécution",
+        r"déroulement\s+pas\s+à\s+pas",
+        r"valeurs\s+successives",
+        r"à\s+l[''']itération\s+\d",
+        r"après\s+exécution",
+        r"état\s+du\s+programme",
+    ]
+    for marker in markers:
+        if re.search(marker, text, re.IGNORECASE):
+            return [{"keyword": "trace d'exécution", "question": "Complétez le tableau de trace.", "sentence": text[:300]}]
+    return []
+
+
+def detect_entree_sortie(text: str) -> list[dict]:
+    markers = [
+        r"prend\s+en\s+entrée",
+        r"retourne\s+(?:en\s+sortie|une\s+valeur|le\s+résultat)",
+        r"données?\s+d[''']entrée",
+        r"(?:valeur|résultat)\s+(?:de\s+retour|retourné)",
+        r"paramètres?\s+d[''']entrée",
+        r"entrée\s*:",
+        r"sortie\s*:",
+    ]
+    for marker in markers:
+        m = re.search(marker, text, re.IGNORECASE)
+        if m:
+            return [{"keyword": "interface de la fonction", "question": "Identifiez les entrées et sorties.", "sentence": text[:300]}]
+    return []
+
+
+def detect_preconditions(text: str) -> list[dict]:
+    markers = [
+        r"précondition",
+        r"postcondition",
+        r"à\s+condition\s+que",
+        r"sous\s+réserve\s+que",
+        r"garantit\s+que",
+        r"assure\s+que",
+        r"contrat\s+(?:de|d['''])",
+    ]
+    for marker in markers:
+        m = re.search(marker, text, re.IGNORECASE)
+        if m:
+            return [{"keyword": "préconditions/postconditions", "question": "Énoncez les préconditions et postconditions.", "sentence": text[:300]}]
+    return []
+
+
+def detect_conversion_langage(text: str) -> list[dict]:
+    has_algo = bool(re.search(r'POUR\s+\w+\s+DE|TANT\s+QUE|RÉPÉTER|FONCTION\s+\w+\s*\(|RETOURNER', text))
+    has_py   = bool(re.search(r'\bdef\s+\w+\s*\(|\bfor\s+\w+\s+in\s+|\bwhile\s+', text))
+    has_js   = bool(re.search(r'\bfunction\s+\w+\s*\(|console\.log\s*\(|\bconst\b|\blet\b', text))
+    explicit = bool(re.search(
+        r"équivalent\s+en\s+(?:Python|JavaScript|algorithmique)|s[''']écrit\s+en\s+Python"
+        r"|se\s+traduit\s+en\s+(?:JavaScript|Python)|correspond\s+en\s+(?:Python|JavaScript)"
+        r"|la\s+même\s+chose\s+en\s+(?:Python|JavaScript)",
+        text, re.IGNORECASE))
+    if explicit or (has_algo and (has_py or has_js)):
+        return [{"keyword": "traduction langage", "question": "Traduisez dans l'autre langage.", "sentence": text[:300]}]
+    return []
+
+
+def detect_complexite(text: str) -> list[dict]:
+    markers = [
+        r"complexité\s+(?:en\s+temps|en\s+espace|temporelle|spatiale|algorithmique)?",
+        r"O\s*\(\s*(?:n²?|n\^2|log\s*n|1|n\s*log\s*n)\s*\)",
+        r"plus\s+(?:efficace|optimal|rapide)\s+que",
+        r"moins\s+efficace",
+        r"coût\s+(?:en\s+mémoire|computationnel|d[''']exécution)",
+        r"nombre\s+d[''']opérations",
+        r"algorithme\s+optimal",
+    ]
+    for marker in markers:
+        m = re.search(marker, text, re.IGNORECASE)
+        if m:
+            return [{"keyword": "complexité algorithmique", "question": "Analysez la complexité et proposez une amélioration.", "sentence": text[:300]}]
+    return []
+
+
+def detect_regle_absolue(text: str) -> list[dict]:
+    markers = [
+        r"il\s+faut\s+toujours",
+        r"on\s+ne\s+doit\s+(?:jamais|pas)",
+        r"ne\s+jamais\s+",
+        r"principe\s+fondamental",
+        r"règle\s+(?:d[''']or|de\s+base|fondamentale)",
+        r"toujours\s+(?:vérifier|s[''']assurer|initialiser)",
+        r"interdit\s+de",
+    ]
+    for marker in markers:
+        m = re.search(marker, text, re.IGNORECASE)
+        if m:
+            after = text[m.end():m.end()+80].strip().split('.')[0]
+            kw = _clean_keyword(after[:40]) or "cette règle"
+            return [{"keyword": kw, "question": "Énoncez la règle et donnez un contre-exemple.", "sentence": text[:300]}]
+    return []
+
+
+def detect_schema(text: str) -> list[dict]:
+    markers = [
+        r"(?:le|un)\s+schéma\s+(?:montre|représente|illustre)",
+        r"comme\s+le\s+montre\s+(?:la\s+figure|le\s+diagramme|le\s+schéma)",
+        r"représenté\s+par\s+(?:le|un)\s+(?:diagramme|schéma)",
+        r"(?:la\s+figure|le\s+diagramme)\s+(?:ci-dessous|suivant)",
+        r"représentation\s+graphique",
+        r"\borganigramme\b",
+        r"diagramme\s+(?:de|d[''']|des)",
+    ]
+    for marker in markers:
+        if re.search(marker, text, re.IGNORECASE):
+            return [{"keyword": "schéma/organigramme", "question": "Décrivez ou reproduisez le schéma.", "sentence": text[:300]}]
+    return []
+
+
+def sec_title_from(text: str) -> str:
+    """Extrait le titre (première phrase) d'un texte pour fallback de mot-clé."""
+    return text.split('.')[0][:40].strip()
+
+
+def _make_analyse_exercise(sec, level, pat_type, is_algo, is_py, prefix) -> ExerciseOutput:
+    """Génère un exercice d'analyse/comparaison pour les patterns 32-40."""
+
+    title_sec = sec.title.strip()
+
+    META = {
+        'comparaison': {
+            'nom': 'Comparaison',
+            'facile_body': (
+                f"<strong>Objectif :</strong> Comparer deux concepts de la section «&nbsp;{title_sec}&nbsp;».<br><br>"
+                f"Répondez aux questions suivantes :<br><br>"
+                f"1. Citez <strong>deux différences</strong> entre les éléments comparés dans le cours.<br>"
+                f"2. Citez <strong>un point commun</strong> entre ces deux éléments.<br>"
+                f"3. Dans quel cas choisiriez-vous l'un plutôt que l'autre ?"
+            ),
+            'moyen_body': (
+                f"<strong>Objectif :</strong> Compléter le tableau comparatif.<br><br>"
+                f"Remplissez chaque cellule vide :"
+            ),
+            'moyen_code': (
+                f"Critère          | Élément A          | Élément B\n"
+                f"─────────────────┼────────────────────┼──────────────────\n"
+                f"Condition usage  | __________         | __________\n"
+                f"Nb exécutions    | __________         | __________\n"
+                f"Risque principal | __________         | __________\n"
+                f"Syntaxe clé      | __________         | __________"
+            ),
+            'diff_body': (
+                f"<strong>Objectif :</strong> Rédiger une comparaison argumentée.<br><br>"
+                f"Pour la section «&nbsp;{title_sec}&nbsp;», rédigez un paragraphe qui :<br><br>"
+                f"1. Présente les <strong>deux éléments</strong> comparés dans le cours.<br>"
+                f"2. Explique leurs <strong>différences fondamentales</strong> avec des exemples concrets.<br>"
+                f"3. Conclut sur <strong>quand utiliser l'un vs l'autre</strong>.<br><br>"
+                f"<em>Conseil : appuyez-vous sur des exemples tirés directement du cours.</em>"
+            ),
+        },
+        'erreur_piege': {
+            'nom': 'Erreur / Piège',
+            'facile_body': (
+                f"<strong>Objectif :</strong> Identifier une erreur classique de la section «&nbsp;{title_sec}&nbsp;».<br><br>"
+                f"1. Quelle est l'erreur décrite dans le cours ?<br>"
+                f"2. Pourquoi cette erreur est-elle difficile à détecter ?<br>"
+                f"3. Comment l'éviter systématiquement ?"
+            ),
+            'moyen_body': (
+                f"<strong>Objectif :</strong> Trouver et corriger le bug dans ce code.<br><br>"
+                f"Ce code contient une <strong>erreur classique</strong> de la section «&nbsp;{title_sec}&nbsp;».<br>"
+                f"Identifiez-la, expliquez-la et écrivez la version corrigée :"
+            ),
+            'moyen_code': (
+                "// CODE BUGUÉ — Trouver l'erreur\n"
+                + ("Variable i, somme : Entier\nDébut\n   somme ← 0\n   Pour i de 1 à 10 Faire\n      i ← i + 2\n      somme ← somme + i\n   FinPour\n   Écrire(somme)\nFin"
+                   if is_algo else
+                   ("somme = 0\nfor i in range(1, 11):\n    i = i + 2  # erreur ici\n    somme += i\nprint(somme)"
+                    if is_py else
+                    "let somme = 0;\nfor (let i = 1; i <= 10; i++) {\n    i = i + 2; // erreur ici\n    somme += i;\n}\nconsole.log(somme);"
+                    )
+                   )
+            ),
+            'diff_body': (
+                f"<strong>Objectif :</strong> Analyser, corriger et prévenir une erreur.<br><br>"
+                f"Pour la section «&nbsp;{title_sec}&nbsp;» :<br><br>"
+                f"1. Décrivez précisément l'erreur mentionnée.<br>"
+                f"2. Écrivez un exemple de code <strong>incorrect</strong> illustrant cette erreur.<br>"
+                f"3. Écrivez la version <strong>corrigée</strong> avec explication.<br>"
+                f"4. Proposez une règle ou vérification pour <strong>ne plus commettre</strong> cette erreur.<br><br>"
+                f"<em>Conseil : donnez un cas concret, pas juste une description abstraite.</em>"
+            ),
+        },
+        'trace_execution': {
+            'nom': "Trace d'Exécution",
+            'facile_body': (
+                f"<strong>Objectif :</strong> Comprendre le déroulement d'un algorithme de la section «&nbsp;{title_sec}&nbsp;».<br><br>"
+                f"1. Combien d'itérations effectue la boucle si N = 4 ?<br>"
+                f"2. Quelle est la valeur finale de la variable de résultat ?<br>"
+                f"3. Que se passe-t-il si N = 0 ?"
+            ),
+            'moyen_body': (
+                f"<strong>Objectif :</strong> Compléter le tableau de trace.<br><br>"
+                f"Tracez l'exécution de l'algorithme étape par étape en remplissant les cellules vides :"
+            ),
+            'moyen_code': (
+                "i    | condition | instruction      | somme\n"
+                "─────┼───────────┼──────────────────┼──────\n"
+                "init |    —      | somme ← 0        |   0\n"
+                "  1  | 1 <= N ?  | somme ← 0 + 1    | ____\n"
+                "  2  | 2 <= N ?  | somme ← __ + 2   | ____\n"
+                "  3  | 3 <= N ?  | somme ← __ + 3   | ____\n"
+                "  4  | 4 <= N ?  | somme ← __ + 4   | ____\n"
+                "  5  | 5 <= N ?  | sortie boucle    | ____"
+            ),
+            'diff_body': (
+                f"<strong>Objectif :</strong> Tracer complètement l'exécution.<br><br>"
+                f"Pour l'algorithme de la section «&nbsp;{title_sec}&nbsp;», avec N = 5 :<br><br>"
+                f"1. Construisez le <strong>tableau de trace complet</strong> (une ligne par itération).<br>"
+                f"2. Indiquez la valeur de chaque variable après chaque étape.<br>"
+                f"3. Donnez le <strong>résultat final</strong> et vérifiez-le manuellement.<br><br>"
+                f"<em>Conseil : tracez chaque variable sur une colonne distincte.</em>"
+            ),
+        },
+        'entree_sortie': {
+            'nom': 'Entrées / Sorties',
+            'facile_body': (
+                f"<strong>Objectif :</strong> Identifier le contrat d'interface de la section «&nbsp;{title_sec}&nbsp;».<br><br>"
+                f"Pour la fonction ou l'algorithme décrit :<br><br>"
+                f"1. Listez toutes les <strong>données en entrée</strong> (nom, type, contrainte).<br>"
+                f"2. Décrivez la <strong>valeur retournée</strong> en sortie.<br>"
+                f"3. Que retourne la fonction si les données d'entrée sont invalides ?"
+            ),
+            'moyen_body': (
+                f"<strong>Objectif :</strong> Compléter le contrat d'interface.<br><br>"
+                f"Remplissez le schéma entrée/sortie de la fonction :"
+            ),
+            'moyen_code': (
+                "FONCTION __________(________ : ________, ________ : ________) : ________\n"
+                "┌─────────────────────────────────────────┐\n"
+                "│  Entrées  :                              │\n"
+                "│    — __________ (________) : __________  │\n"
+                "│    — __________ (________) : __________  │\n"
+                "│  Sortie   :                              │\n"
+                "│    — __________ : __________             │\n"
+                "│  Précond  : __________                   │\n"
+                "└─────────────────────────────────────────┘"
+            ),
+            'diff_body': (
+                f"<strong>Objectif :</strong> Concevoir et documenter une fonction complète.<br><br>"
+                f"Pour la section «&nbsp;{title_sec}&nbsp;» :<br><br>"
+                f"1. Définissez les <strong>entrées</strong> avec leur type et leurs contraintes.<br>"
+                f"2. Définissez la <strong>sortie</strong> avec son type et ce qu'elle représente.<br>"
+                f"3. Écrivez la <strong>signature complète</strong> de la fonction.<br>"
+                f"4. Implémentez le corps de la fonction.<br><br>"
+                f"<em>Conseil : commencez par le contrat avant d'écrire le code.</em>"
+            ),
+        },
+        'preconditions': {
+            'nom': 'Préconditions / Postconditions',
+            'facile_body': (
+                f"<strong>Objectif :</strong> Comprendre le contrat de l'algorithme «&nbsp;{title_sec}&nbsp;».<br><br>"
+                f"1. Quelle est la <strong>précondition</strong> principale ? (Que doit-on garantir en entrée ?)<br>"
+                f"2. Quelle est la <strong>postcondition</strong> ? (Que garantit l'algorithme en sortie ?)<br>"
+                f"3. Que se passe-t-il si la précondition n'est pas respectée ?"
+            ),
+            'moyen_body': (
+                f"<strong>Objectif :</strong> Compléter le contrat formel.<br><br>"
+                f"Remplissez les blancs du contrat de l'algorithme :"
+            ),
+            'moyen_code': (
+                "ALGORITHME : __________\n"
+                "─────────────────────────────────────────\n"
+                "PRÉCONDITION  : __________\n"
+                "               __________\n"
+                "─────────────────────────────────────────\n"
+                "TRAITEMENT    : (corps de l'algorithme)\n"
+                "─────────────────────────────────────────\n"
+                "POSTCONDITION : __________\n"
+                "               __________"
+            ),
+            'diff_body': (
+                f"<strong>Objectif :</strong> Rédiger le contrat complet.<br><br>"
+                f"Pour l'algorithme de la section «&nbsp;{title_sec}&nbsp;» :<br><br>"
+                f"1. Rédigez toutes les <strong>préconditions</strong> avec justification.<br>"
+                f"2. Rédigez toutes les <strong>postconditions</strong>.<br>"
+                f"3. Écrivez le code qui <strong>vérifie</strong> les préconditions en début de fonction.<br>"
+                f"4. Donnez un exemple d'appel <strong>valide</strong> et un appel <strong>invalide</strong>.<br><br>"
+                f"<em>Conseil : pensez aux cas limites (N=0, valeur négative, tableau vide…).</em>"
+            ),
+        },
+        'conversion_langage': {
+            'nom': 'Conversion entre Langages',
+            'facile_body': (
+                f"<strong>Objectif :</strong> Reconnaître les équivalences de la section «&nbsp;{title_sec}&nbsp;».<br><br>"
+                f"1. Identifiez la structure algorithmique principale présentée.<br>"
+                f"2. Donnez sa syntaxe en <strong>algorithmique</strong>.<br>"
+                f"3. Donnez son équivalent en <strong>Python</strong>.<br>"
+                f"4. Donnez son équivalent en <strong>JavaScript</strong>."
+            ),
+            'moyen_body': (
+                f"<strong>Objectif :</strong> Compléter la table de correspondance.<br><br>"
+                f"Remplissez les colonnes manquantes :"
+            ),
+            'moyen_code': (
+                "Algorithmique             | Python                | JavaScript\n"
+                "──────────────────────────┼───────────────────────┼──────────────────────\n"
+                "POUR i DE 1 À N FAIRE     | __________            | __________\n"
+                "TANT QUE cond FAIRE       | __________            | __________\n"
+                "RÉPÉTER...JUSQU'À cond    | __________            | __________\n"
+                "SI cond ALORS...SINON     | __________            | __________\n"
+                "FONCTION f(n:Entier):Réel | __________            | __________\n"
+                "RETOURNER valeur          | __________            | __________"
+            ),
+            'diff_body': (
+                f"<strong>Objectif :</strong> Traduire un algorithme complet.<br><br>"
+                f"Pour la section «&nbsp;{title_sec}&nbsp;» :<br><br>"
+                f"1. Écrivez l'algorithme complet en <strong>notation algorithmique</strong>.<br>"
+                f"2. Traduisez-le intégralement en <strong>Python</strong>.<br>"
+                f"3. Traduisez-le intégralement en <strong>JavaScript</strong>.<br>"
+                f"4. Signalez les <strong>différences syntaxiques</strong> notables entre les trois versions.<br><br>"
+                f"<em>Conseil : commencez par l'algorithmique, les autres découlent naturellement.</em>"
+            ),
+        },
+        'complexite': {
+            'nom': 'Complexité / Efficacité',
+            'facile_body': (
+                f"<strong>Objectif :</strong> Analyser la complexité de la section «&nbsp;{title_sec}&nbsp;».<br><br>"
+                f"1. Quelle est la complexité en temps de l'algorithme ? (O(1), O(n), O(n²)…)<br>"
+                f"2. Justifiez votre réponse en comptant le nombre d'opérations.<br>"
+                f"3. Existe-t-il un algorithme plus efficace pour le même problème ?"
+            ),
+            'moyen_body': (
+                f"<strong>Objectif :</strong> Comparer deux algorithmes.<br><br>"
+                f"Analysez les deux algorithmes et remplissez le tableau :"
+            ),
+            'moyen_code': (
+                "Critère               | Algo A (boucle simple) | Algo B (boucles imbriquées)\n"
+                "──────────────────────┼────────────────────────┼────────────────────────────\n"
+                "Nb boucles            | 1                      | 2 imbriquées\n"
+                "Nb opérations (N=10)  | __________             | __________\n"
+                "Nb opérations (N=100) | __________             | __________\n"
+                "Complexité            | __________             | __________\n"
+                "Recommandé pour       | __________             | __________"
+            ),
+            'diff_body': (
+                f"<strong>Objectif :</strong> Analyser et optimiser un algorithme.<br><br>"
+                f"Pour l'algorithme de la section «&nbsp;{title_sec}&nbsp;» :<br><br>"
+                f"1. Déterminez la <strong>complexité en temps</strong> et en espace.<br>"
+                f"2. Calculez le nombre d'opérations pour N=10, N=100, N=1000.<br>"
+                f"3. Identifiez le <strong>goulot d'étranglement</strong> (la partie la plus coûteuse).<br>"
+                f"4. Proposez une <strong>version optimisée</strong> si possible.<br><br>"
+                f"<em>Conseil : comptez les boucles imbriquées pour déterminer la complexité.</em>"
+            ),
+        },
+        'regle_absolue': {
+            'nom': 'Règle Absolue',
+            'facile_body': (
+                f"<strong>Objectif :</strong> Retenir les règles fondamentales de la section «&nbsp;{title_sec}&nbsp;».<br><br>"
+                f"1. Énoncez la règle principale décrite dans le cours.<br>"
+                f"2. Donnez un exemple de code qui <strong>respecte</strong> cette règle.<br>"
+                f"3. Donnez un exemple de code qui <strong>enfreint</strong> cette règle et expliquez les conséquences."
+            ),
+            'moyen_body': (
+                f"<strong>Objectif :</strong> Compléter l'énoncé de la règle.<br><br>"
+                f"Complétez chaque règle fondamentale avec le bon terme :"
+            ),
+            'moyen_code': (
+                "Règle 1 : Il faut toujours __________ une variable avant de __________.\n"
+                "Règle 2 : On ne doit jamais __________ la variable de contrôle dans une boucle __________.\n"
+                "Règle 3 : Toute fonction récursive doit avoir un __________.\n"
+                "Règle 4 : Un diviseur ne doit jamais valoir __________ avant une division.\n"
+                "Règle 5 : Il faut toujours vérifier que l'indice est entre __ et __ pour un tableau de taille N."
+            ),
+            'diff_body': (
+                f"<strong>Objectif :</strong> Justifier et illustrer une règle absolue.<br><br>"
+                f"Pour la règle décrite dans la section «&nbsp;{title_sec}&nbsp;» :<br><br>"
+                f"1. Énoncez la règle de manière précise et complète.<br>"
+                f"2. Expliquez <strong>pourquoi</strong> cette règle est fondamentale.<br>"
+                f"3. Donnez un exemple concret de programme qui la <strong>respecte</strong>.<br>"
+                f"4. Donnez un exemple qui la <strong>viole</strong> et montrez le bug produit.<br><br>"
+                f"<em>Conseil : le contre-exemple est aussi important que l'exemple positif.</em>"
+            ),
+        },
+        'schema': {
+            'nom': 'Schéma / Organigramme',
+            'facile_body': (
+                f"<strong>Objectif :</strong> Comprendre une représentation graphique de la section «&nbsp;{title_sec}&nbsp;».<br><br>"
+                f"1. Décrivez en mots ce que représente le schéma ou l'organigramme.<br>"
+                f"2. Identifiez les <strong>symboles utilisés</strong> et leur signification.<br>"
+                f"3. Reliez le schéma à l'algorithme correspondant."
+            ),
+            'moyen_body': (
+                f"<strong>Objectif :</strong> Compléter l'organigramme.<br><br>"
+                f"Remplissez les éléments manquants de l'organigramme de la boucle :"
+            ),
+            'moyen_code': (
+                "  ┌─────────────────────┐\n"
+                "  │  __________         │  ← Initialisation\n"
+                "  └──────────┬──────────┘\n"
+                "             ↓\n"
+                "   [__________?] ──Non──→  __________ (fin)\n"
+                "             │ Oui\n"
+                "             ↓\n"
+                "   ┌─────────────────┐\n"
+                "   │  __________     │  ← Corps de la boucle\n"
+                "   └────────┬────────┘\n"
+                "            │\n"
+                "            └────────────↑  (retour condition)"
+            ),
+            'diff_body': (
+                f"<strong>Objectif :</strong> Construire un organigramme complet.<br><br>"
+                f"Pour l'algorithme de la section «&nbsp;{title_sec}&nbsp;» :<br><br>"
+                f"1. Dessinez (ou décrivez précisément) l'<strong>organigramme complet</strong>.<br>"
+                f"2. Utilisez les symboles standard : ovale (début/fin), rectangle (traitement), losange (décision).<br>"
+                f"3. Annotez chaque bloc avec la description de l'opération.<br>"
+                f"4. Indiquez les flèches et les conditions sur chaque branche.<br><br>"
+                f"<em>Conseil : commencez par le début et la fin, puis remplissez le milieu.</em>"
+            ),
+        },
+    }
+
+    meta = META.get(pat_type)
+    if not meta:
+        return None
+
+    if level == 'facile':
+        return ExerciseOutput(
+            level='facile',
+            title=f"{meta['nom']} — {prefix}{title_sec}",
+            body=meta['facile_body'],
+            code=None
+        )
+
+    if level == 'moyen':
+        return ExerciseOutput(
+            level='moyen',
+            title=f"{meta['nom']} à compléter — {prefix}{title_sec}",
+            body=meta['moyen_body'],
+            code=meta.get('moyen_code')
+        )
+
+    return ExerciseOutput(
+        level='difficile',
+        title=f"{meta['nom']} — Production — {prefix}{title_sec}",
+        body=meta['diff_body'],
+        code=None
+    )
+
+
 def _detect_best_pattern(sec) -> tuple:
-    """Essaie tous les patterns et retourne le premier détecté.
+    """Essaie d'abord les patterns syntaxiques (blocs de code), puis les patterns textuels.
     Retourne (type, data) ou (None, [])."""
     text = f"{sec.title}. {sec.content}"
+
+    # ── Priorité 1 : blocs de syntaxe algorithmique ──
+    for name, func in [
+        ('syntaxe_pour', detect_syntaxe_pour),
+        ('syntaxe_tantque', detect_syntaxe_tantque),
+        ('syntaxe_repeter', detect_syntaxe_repeter),
+        ('syntaxe_si', detect_syntaxe_si),
+        ('syntaxe_fonction', detect_syntaxe_fonction),
+        ('syntaxe_tableau', detect_syntaxe_tableau),
+    ]:
+        data = func(text)
+        if data:
+            return (name, data)
+
+    # ── Priorité 2 : patterns analytiques (comparaison, erreur, trace…) ──
+    for name, func in [
+        ('comparaison',        detect_comparaison),
+        ('erreur_piege',       detect_erreur_piege),
+        ('trace_execution',    detect_trace_execution),
+        ('entree_sortie',      detect_entree_sortie),
+        ('preconditions',      detect_preconditions),
+        ('conversion_langage', detect_conversion_langage),
+        ('complexite',         detect_complexite),
+        ('regle_absolue',      detect_regle_absolue),
+        ('schema',             detect_schema),
+    ]:
+        data = func(text)
+        if data:
+            return (name, data)
+
+    # ── Priorité 3 : patterns textuels classiques ──
     for name, func in [
         ('definition', detect_definitions),
         ('cause', detect_causes),
@@ -1175,9 +1824,217 @@ async def generate_exercises(req: GenerationRequest) -> list[ExerciseOutput]:
         prefix = f"{sec.num} — " if sec.num else ""
 
         for d in diffs:
-            out.append(_make_exercise(sec, d, is_pour, is_tantque, is_if, is_algo, is_py, prefix, req.appro))
+            ex = _make_exercise(sec, d, is_pour, is_tantque, is_if, is_algo, is_py, prefix, req.appro)
+            ex.section = sec
+            out.append(ex)
 
     return out
+
+
+def _make_syntaxe_exercise(sec, level, pat_type, is_algo, is_py, prefix) -> ExerciseOutput:
+    """Génère un exercice de production algorithmique pour les patterns syntaxiques (26-31)."""
+
+    SYNTAXE_META = {
+        'syntaxe_pour': {
+            'nom': 'Boucle POUR',
+            'scenarios_algo': [
+                ("Calculer la somme des entiers",
+                 "Écrire un algorithme qui calcule la somme des entiers de 1 à N (N saisi par l'utilisateur).",
+                 "Variable i, N, somme : Entier\nDébut\n   Écrire(\"Entrer N :\")\n   Lire(N)\n   somme ← 0\n   Pour i de 1 à N Faire\n      somme ← somme + i\n   FinPour\n   Écrire(\"Somme = \", somme)\nFin"),
+                ("Saisir et afficher N notes",
+                 "Écrire un algorithme qui demande N notes à l'utilisateur et les affiche une par une.",
+                 "Variable i, N : Entier\nVariable note : Réel\nDébut\n   Écrire(\"Combien de notes ?\")\n   Lire(N)\n   Pour i de 1 à N Faire\n      Écrire(\"Note \", i, \" :\")\n      Lire(note)\n      Écrire(\"Note saisie : \", note)\n   FinPour\nFin"),
+                ("Table de multiplication",
+                 "Écrire un algorithme qui affiche la table de multiplication d'un entier saisi.",
+                 "Variable n, i : Entier\nDébut\n   Écrire(\"Entrer un entier :\")\n   Lire(n)\n   Pour i de 1 à 10 Faire\n      Écrire(n, \" × \", i, \" = \", n*i)\n   FinPour\nFin"),
+            ],
+            'scenarios_py': [
+                ("Calculer la somme des entiers",
+                 "Écrire une fonction Python qui calcule la somme des entiers de 1 à N.",
+                 "def somme_entiers(N):\n    total = 0\n    for i in range(1, N + 1):\n        total += i\n    return total\n\nN = int(input(\"Entrer N : \"))\nprint(\"Somme =\", somme_entiers(N))"),
+                ("Saisir et afficher N notes",
+                 "Écrire un programme Python qui saisit N notes et calcule la moyenne.",
+                 "N = int(input(\"Nombre de notes : \"))\nnotes = []\nfor i in range(N):\n    note = float(input(f\"Note {i+1} : \"))\n    notes.append(note)\nprint(\"Moyenne :\", sum(notes) / N)"),
+            ],
+            'scenarios_js': [
+                ("Table de multiplication",
+                 "Écrire une fonction JavaScript qui affiche la table de multiplication.",
+                 "function tableMultiplication(n) {\n  for (let i = 1; i <= 10; i++) {\n    console.log(`${n} × ${i} = ${n * i}`);\n  }\n}\ntableMultiplication(parseInt(prompt('Entier :')));"),
+            ],
+            'trous_algo': "Variable i, N, somme : Entier\nDébut\n   Lire(N)\n   somme ← __\n   Pour i de __ à N Faire\n      somme ← somme + __\n   FinPour\n   Écrire(somme)\nFin",
+            'trous_py':   "N = int(input())\ntotal = __\nfor i in range(__, __ + 1):\n    total += __\nprint(total)",
+            'trous_js':   "let total = __;\nfor (let i = __; i <= N; i++) {\n    total += __;\n}\nconsole.log(total);",
+        },
+        'syntaxe_tantque': {
+            'nom': 'Boucle TANT QUE',
+            'scenarios_algo': [
+                ("Lire jusqu'à 0",
+                 "Écrire un algorithme qui lit des entiers positifs et s'arrête quand l'utilisateur saisit 0. Il affiche la somme.",
+                 "Variable n, somme : Entier\nDébut\n   somme ← 0\n   Lire(n)\n   Tant que n != 0 Faire\n      somme ← somme + n\n      Lire(n)\n   FinTantQue\n   Écrire(\"Somme = \", somme)\nFin"),
+                ("Compte à rebours",
+                 "Écrire un algorithme qui affiche un compte à rebours de N jusqu'à 0.",
+                 "Variable N : Entier\nDébut\n   Écrire(\"Entrer N :\")\n   Lire(N)\n   Tant que N >= 0 Faire\n      Écrire(N)\n      N ← N - 1\n   FinTantQue\nFin"),
+            ],
+            'scenarios_py': [
+                ("Lire jusqu'à 0",
+                 "Écrire un programme Python qui lit des entiers jusqu'à la saisie de 0 et affiche leur somme.",
+                 "somme = 0\nn = int(input(\"Entier (0 pour arrêter) : \"))\nwhile n != 0:\n    somme += n\n    n = int(input(\"Entier : \"))\nprint(\"Somme =\", somme)"),
+            ],
+            'scenarios_js': [
+                ("Deviner un nombre",
+                 "Écrire un programme JavaScript où l'utilisateur devine un nombre secret avec while.",
+                 "const secret = 42;\nlet essai;\nwhile (essai !== secret) {\n  essai = parseInt(prompt('Devinez le nombre :'));\n  if (essai < secret) console.log('Trop petit !');\n  else if (essai > secret) console.log('Trop grand !');\n}\nconsole.log('Bravo !');"),
+            ],
+            'trous_algo': "Variable n, somme : Entier\nDébut\n   somme ← 0\n   Lire(n)\n   Tant que __ Faire\n      somme ← somme + n\n      __\n   FinTantQue\n   Écrire(somme)\nFin",
+            'trous_py':   "somme = 0\nn = int(input())\nwhile __:\n    somme += n\n    n = int(input())\nprint(somme)",
+            'trous_js':   "let somme = 0, n;\nn = parseInt(prompt());\nwhile (__) {\n    somme += n;\n    n = parseInt(__);\n}\nconsole.log(somme);",
+        },
+        'syntaxe_repeter': {
+            'nom': "Boucle RÉPÉTER JUSQU'À",
+            'scenarios_algo': [
+                ("Validation de saisie",
+                 "Écrire un algorithme qui force l'utilisateur à saisir un entier strictement positif (refus tant que la valeur est ≤ 0).",
+                 "Variable n : Entier\nDébut\n   Répéter\n      Écrire(\"Saisir un entier positif :\")\n      Lire(n)\n      Si n <= 0 Alors\n         Écrire(\"Valeur invalide !\")\n      FinSi\n   Jusqu'à (n > 0)\n   Écrire(\"Valeur acceptée : \", n)\nFin"),
+                ("Menu interactif",
+                 "Écrire un algorithme qui affiche un menu (1-Ajouter, 2-Supprimer, 0-Quitter) et répète jusqu'au choix 0.",
+                 "Variable choix : Entier\nDébut\n   Répéter\n      Écrire(\"1-Ajouter  2-Supprimer  0-Quitter\")\n      Lire(choix)\n      Si choix = 1 Alors Écrire(\"Ajout...\")\n      Sinon Si choix = 2 Alors Écrire(\"Suppression...\")\n      FinSi\n   Jusqu'à (choix = 0)\n   Écrire(\"Au revoir !\")\nFin"),
+            ],
+            'scenarios_py': [
+                ("Validation de saisie",
+                 "Python n'a pas de do-while natif. Écrire l'équivalent avec while True et break.",
+                 "while True:\n    n = int(input(\"Saisir un entier positif : \"))\n    if n > 0:\n        break\n    print(\"Valeur invalide !\")\nprint(\"Valeur acceptée :\", n)"),
+            ],
+            'scenarios_js': [
+                ("Menu interactif",
+                 "Écrire un menu interactif en JavaScript avec do...while.",
+                 "let choix;\ndo {\n  choix = parseInt(prompt('1-Ajouter  2-Supprimer  0-Quitter'));\n  if (choix === 1) console.log('Ajout...');\n  else if (choix === 2) console.log('Suppression...');\n} while (choix !== 0);\nconsole.log('Au revoir !');"),
+            ],
+            'trous_algo': "Variable n : Entier\nDébut\n   __\n      Écrire(\"Saisir un positif :\")\n      Lire(n)\n   __ (n > 0)\n   Écrire(n)\nFin",
+            'trous_py':   "while __:\n    n = int(input(\"Saisir un positif : \"))\n    if n > 0:\n        __\n    print(\"Invalide\")\nprint(n)",
+            'trous_js':   "let n;\ndo {\n  n = parseInt(prompt('Saisir un positif :'));\n} while (__);\nconsole.log(n);",
+        },
+        'syntaxe_si': {
+            'nom': 'Structure SI / SINON',
+            'scenarios_algo': [
+                ("Classifier une note",
+                 "Écrire un algorithme qui lit une note et affiche : 'Très bien' (≥16), 'Bien' (≥13), 'Passable' (≥10), 'Insuffisant' (<10).",
+                 "Variable note : Réel\nDébut\n   Écrire(\"Entrer la note :\")\n   Lire(note)\n   Si note >= 16 Alors\n      Écrire(\"Très bien\")\n   Sinon Si note >= 13 Alors\n      Écrire(\"Bien\")\n   Sinon Si note >= 10 Alors\n      Écrire(\"Passable\")\n   Sinon\n      Écrire(\"Insuffisant\")\n   FinSi\nFin"),
+                ("Pair ou impair",
+                 "Écrire un algorithme qui détermine si un entier saisi est pair ou impair.",
+                 "Variable n : Entier\nDébut\n   Lire(n)\n   Si (n MOD 2 = 0) Alors\n      Écrire(n, \" est pair\")\n   Sinon\n      Écrire(n, \" est impair\")\n   FinSi\nFin"),
+            ],
+            'scenarios_py': [
+                ("Classifier une note",
+                 "Écrire une fonction Python qui classe une note sur 20.",
+                 "def classifier_note(note):\n    if note >= 16:\n        return 'Très bien'\n    elif note >= 13:\n        return 'Bien'\n    elif note >= 10:\n        return 'Passable'\n    else:\n        return 'Insuffisant'\n\nnote = float(input('Note : '))\nprint(classifier_note(note))"),
+            ],
+            'scenarios_js': [
+                ("Calculatrice simple",
+                 "Écrire une fonction JavaScript qui effectue +, -, ×, ÷ selon le signe saisi.",
+                 "function calculer(a, op, b) {\n  if (op === '+') return a + b;\n  else if (op === '-') return a - b;\n  else if (op === '*') return a * b;\n  else if (op === '/') return b !== 0 ? a / b : 'Division par zéro';\n  else return 'Opérateur inconnu';\n}"),
+            ],
+            'trous_algo': "Variable note : Réel\nDébut\n   Lire(note)\n   __ note >= 10 __ \n      Écrire(\"Admis\")\n   __\n      Écrire(\"Échec\")\n   FinSi\nFin",
+            'trous_py':   "note = float(input())\n__ note >= 10:\n    print('Admis')\n__:\n    print('Échec')",
+            'trous_js':   "let note = parseFloat(prompt());\nif (__) {\n    console.log('Admis');\n} __ {\n    console.log('Échec');\n}",
+        },
+        'syntaxe_fonction': {
+            'nom': 'Fonctions et Procédures',
+            'scenarios_algo': [
+                ("Fonction carré",
+                 "Écrire une fonction Carré(n) qui retourne le carré d'un entier, puis un programme principal qui l'appelle pour 5 valeurs.",
+                 "Fonction Carré(n : Entier) : Entier\nDébut\n   Retourner n * n\nFin\n\n// Programme principal\nVariable i, res : Entier\nDébut\n   Pour i de 1 à 5 Faire\n      res ← Carré(i)\n      Écrire(i, \"² = \", res)\n   FinPour\nFin"),
+                ("Procédure afficher étoiles",
+                 "Écrire une procédure AfficherLigne(n) qui affiche n étoiles, puis l'appeler 3 fois.",
+                 "Procédure AfficherLigne(n : Entier)\nVariable i : Entier\nDébut\n   Pour i de 1 à n Faire\n      Écrire(\"*\")\n   FinPour\n   Écrire(\"\\n\")\nFin\n\n// Programme principal\nDébut\n   AfficherLigne(3)\n   AfficherLigne(5)\n   AfficherLigne(7)\nFin"),
+            ],
+            'scenarios_py': [
+                ("Fonction factorielle",
+                 "Écrire une fonction Python factorielle(n) qui calcule n! et la tester.",
+                 "def factorielle(n):\n    if n <= 1:\n        return 1\n    return n * factorielle(n - 1)\n\nfor i in range(1, 8):\n    print(f\"{i}! = {factorielle(i)}\")"),
+            ],
+            'scenarios_js': [
+                ("Fonction maximum",
+                 "Écrire une fonction JavaScript qui retourne le maximum de deux nombres.",
+                 "function maximum(a, b) {\n  return a >= b ? a : b;\n}\n\nconsole.log(maximum(12, 7));   // 12\nconsole.log(maximum(3, 15));   // 15"),
+            ],
+            'trous_algo': "Fonction Carre(n : __) : Entier\nDébut\n   Retourner __ * __\nFin\n\n// Appel\nVariable res : Entier\nDébut\n   res ← __(5)\n   Écrire(res)\nFin",
+            'trous_py':   "def carre(n):\n    return __ * __\n\nfor i in range(1, 6):\n    print(i, '² =', __(i))",
+            'trous_js':   "function carre(n) {\n    return __ * __;\n}\nconsole.log(__(5));",
+        },
+        'syntaxe_tableau': {
+            'nom': 'Tableaux et Listes',
+            'scenarios_algo': [
+                ("Saisie et maximum",
+                 "Écrire un algorithme qui saisit 10 entiers dans un tableau et affiche le plus grand.",
+                 "Variable T : Tableau[0..9] de Entier\nVariable i, max : Entier\nDébut\n   Pour i de 0 à 9 Faire\n      Écrire(\"T[\", i, \"] = \")\n      Lire(T[i])\n   FinPour\n   max ← T[0]\n   Pour i de 1 à 9 Faire\n      Si T[i] > max Alors\n         max ← T[i]\n      FinSi\n   FinPour\n   Écrire(\"Maximum = \", max)\nFin"),
+                ("Somme et moyenne",
+                 "Écrire un algorithme qui remplit un tableau de N notes et calcule leur moyenne.",
+                 "Variable notes : Tableau[0..N-1] de Réel\nVariable i, N : Entier\nVariable somme, moyenne : Réel\nDébut\n   Lire(N)\n   somme ← 0\n   Pour i de 0 à N-1 Faire\n      Lire(notes[i])\n      somme ← somme + notes[i]\n   FinPour\n   moyenne ← somme / N\n   Écrire(\"Moyenne = \", moyenne)\nFin"),
+            ],
+            'scenarios_py': [
+                ("Saisie et maximum",
+                 "Écrire un programme Python qui saisit N valeurs dans une liste et affiche le maximum.",
+                 "N = int(input('Taille : '))\nvaleurs = []\nfor i in range(N):\n    valeurs.append(float(input(f'valeurs[{i}] = ')))\nprint('Maximum :', max(valeurs))"),
+            ],
+            'scenarios_js': [
+                ("Moyenne d'un tableau",
+                 "Écrire une fonction JavaScript qui calcule la moyenne d'un tableau de nombres.",
+                 "function moyenne(tab) {\n  const somme = tab.reduce((acc, v) => acc + v, 0);\n  return somme / tab.length;\n}\n\nconst notes = [12, 15, 9, 17, 11];\nconsole.log('Moyenne :', moyenne(notes));"),
+            ],
+            'trous_algo': "Variable T : Tableau[0..__] de Entier\nVariable i, max : Entier\nDébut\n   Pour i de __ à 9 Faire\n      Lire(T[__])\n   FinPour\n   max ← T[0]\n   Pour i de 1 à 9 Faire\n      Si T[i] > __ Alors\n         max ← __\n      FinSi\n   FinPour\nFin",
+            'trous_py':   "valeurs = []\nfor i in range(N):\n    valeurs.__(float(input()))\nmaxi = valeurs[__]\nfor v in valeurs:\n    if v > maxi:\n        maxi = __\nprint(maxi)",
+            'trous_js':   "let tab = [];\nfor (let i = 0; i < N; i++) {\n    tab.__(parseFloat(prompt()));\n}\nlet max = tab[__];\nfor (let v of tab) {\n    if (v > max) max = __;\n}\nconsole.log(max);",
+        },
+    }
+
+    meta = SYNTAXE_META.get(pat_type)
+    if not meta:
+        return None
+
+    scenarios = meta['scenarios_algo'] if is_algo else (meta['scenarios_py'] if is_py else meta['scenarios_js'])
+    if not scenarios:
+        scenarios = meta['scenarios_algo']
+
+    import random
+    scenario = random.choice(scenarios)
+    titre_scenario, enonce, code_exemple = scenario
+
+    if level == 'facile':
+        return ExerciseOutput(
+            level='facile',
+            title=f"Syntaxe — {meta['nom']} : {titre_scenario}",
+            body=(
+                f"<strong>Objectif :</strong> Comprendre et utiliser la {meta['nom']}.<br><br>"
+                f"<strong>Énoncé :</strong> {enonce}<br><br>"
+                f"<em>Conseil : identifiez d'abord la structure à utiliser, "
+                f"puis déclarez vos variables avant d'écrire le corps.</em>"
+            ),
+            code=None
+        )
+
+    if level == 'moyen':
+        trou = meta['trous_algo'] if is_algo else (meta['trous_py'] if is_py else meta['trous_js'])
+        return ExerciseOutput(
+            level='moyen',
+            title=f"Compléter la syntaxe — {meta['nom']}",
+            body=(
+                f"<strong>Objectif :</strong> Compléter le code manquant pour faire fonctionner l'algorithme.<br><br>"
+                f"Remplacez chaque <code>__</code> par le bon mot-clé ou la bonne valeur :"
+            ),
+            code=trou
+        )
+
+    # Niveau difficile
+    return ExerciseOutput(
+        level='difficile',
+        title=f"Production — {meta['nom']} : {titre_scenario}",
+        body=(
+            f"<strong>Objectif :</strong> Écrire un programme complet de zéro.<br><br>"
+            f"<strong>Énoncé :</strong> {enonce}<br><br>"
+            f"<em>Conseil : testez votre algorithme avec des valeurs connues avant de rendre.</em>"
+        ),
+        code=code_exemple
+    )
 
 
 def _make_exercise(sec, level, is_pour, is_tantque, is_if, is_algo, is_py, prefix, appro) -> ExerciseOutput:
@@ -1185,6 +2042,22 @@ def _make_exercise(sec, level, is_pour, is_tantque, is_if, is_algo, is_py, prefi
 
     # ── Détection unique du meilleur pattern ──
     pat_type, pat_data = _detect_best_pattern(sec)
+
+    # ── Si pattern syntaxique détecté → exercice de production dédié ──
+    if pat_type and pat_type.startswith('syntaxe_'):
+        ex = _make_syntaxe_exercise(sec, level, pat_type, is_algo, is_py, prefix)
+        if ex:
+            return ex
+
+    # ── Si pattern analytique détecté → exercice d'analyse dédié ──
+    _ANALYSE_PATTERNS = {
+        'comparaison', 'erreur_piege', 'trace_execution', 'entree_sortie',
+        'preconditions', 'conversion_langage', 'complexite', 'regle_absolue', 'schema'
+    }
+    if pat_type and pat_type in _ANALYSE_PATTERNS:
+        ex = _make_analyse_exercise(sec, level, pat_type, is_algo, is_py, prefix)
+        if ex:
+            return ex
 
     # ═══════════════════════════════════════
     #  NIVEAU FACILE — Questions de rappel
@@ -1228,21 +2101,19 @@ def _make_exercise(sec, level, is_pour, is_tantque, is_if, is_algo, is_py, prefi
                 code=None
             )
 
-        # ★ FALLBACK : Quiz de discrimination (original)
-        if is_pour:
-            items = ['Afficher les entiers de 1 à 50', 'Calculer la somme de 10 nombres saisis', 'Afficher la table de multiplication de 7']
-        elif is_tantque:
-            items = ["Demander un mot de passe jusqu'à ce qu'il soit correct", "Saisir des nombres tant qu'ils sont négatifs", 'Continuer tant que l\'utilisateur ne saisit pas "0"']
-        else:
-            items = ['Vérifier si un nombre est pair ou impair', 'Afficher "Admis" ou "Échec" selon une note', 'Allumer le chauffage si température < 18°C']
-
-        lang_struct = 'POUR / TANT QUE / SI-SINON' if is_algo else 'for / while / if-else'
+        # ★ FALLBACK : Questions génériques basées sur le titre de la section
+        sec_kw = sec.title.strip()
+        items = [
+            f"Expliquez en vos propres mots : {sec_kw}.",
+            f"Donnez un exemple concret illustrant {sec_kw}.",
+            f"Quelle est l'utilité principale de {sec_kw} ?",
+        ]
         items_html = '<br>'.join([f"{i+1}. {it}" for i, it in enumerate(items)])
         return ExerciseOutput(
             level='facile',
-            title=f"Quiz de discrimination — {prefix}{sec.title}",
-            body=f"<strong>Objectif :</strong> Identifier la bonne structure algorithmique.<br><br>"
-                 f"Pour chaque situation, indiquer la structure à utiliser ({lang_struct}) :<br><br>"
+            title=f"Questions de cours — {prefix}{sec.title}",
+            body=f"<strong>Objectif :</strong> Vérifier la compréhension de ce chapitre.<br><br>"
+                 f"Répondez aux questions suivantes :<br><br>"
                  f"{items_html}",
             code=None
         )
@@ -1484,6 +2355,24 @@ async def deepen_exercise(req: DeepenRequest) -> ExerciseOutput:
     is_algo = req.lang == 'algo'
     is_py   = req.lang == 'python'
 
+    # Si la section d'origine est fournie, générer un exercice difficile basé sur son contenu réel
+    if req.section:
+        sec = req.section
+        key = f"{sec.title} {sec.content}".lower()
+        is_pour    = bool(re.search(r'\bpour\b|boucle pour|\bfor\b|nb fois|nombre de fois', key))
+        is_tantque = bool(re.search(r'tant que|tantque|while|répéter|jusqu\'à', key))
+        is_if      = bool(re.search(r'\bsi\b|sinon|alternative|condition|\bif\b|\belse\b', key))
+        prefix = f"{sec.num} — " if sec.num else ""
+
+        ex = _make_exercise(sec, 'difficile', is_pour, is_tantque, is_if, is_algo, is_py, prefix, appro=True)
+        return ExerciseOutput(
+            level='difficile',
+            title=f"▲ Version Approfondie — {ex.title}",
+            body=ex.body,
+            code=ex.code
+        )
+
+    # Fallback générique si aucune section fournie
     body = (
         "<strong>Défi Expert :</strong> Reprenez l'exercice et ajoutez :<br><br>"
         "1. Gestion des <strong>cas d'erreur</strong> (saisie invalide, valeur hors limite)<br>"

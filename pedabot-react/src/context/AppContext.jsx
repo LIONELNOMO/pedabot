@@ -25,18 +25,8 @@ export const AppProvider = ({ children }) => {
     sections: [],
     selSections: [],
     difficulty: '',
-    lang: 'algo',
-    appro: false
+    lang: 'algo'
   });
-
-  // Gérer l'approfondissement sur le body pour la variante css
-  useEffect(() => {
-    if (wizardDraft.appro) {
-      document.body.classList.add('appro-active');
-    } else {
-      document.body.classList.remove('appro-active');
-    }
-  }, [wizardDraft.appro]);
 
   // Historique conversationnel
   const [messages, setMessages] = useState([]);
@@ -46,8 +36,10 @@ export const AppProvider = ({ children }) => {
     setMessages((prev) => [...prev, msgObj]);
   };
 
-  const toggleAppro = () => {
-    setWizardDraft((prev) => ({ ...prev, appro: !prev.appro }));
+  const resetSession = () => {
+    setStep('IDLE');
+    setMessages([]);
+    setWizardDraft({ exName: '', sections: [], selSections: [], difficulty: '', lang: 'algo' });
   };
   
   const toggleDark = () => {
@@ -61,7 +53,7 @@ export const AppProvider = ({ children }) => {
       step, setStep,
       wizardDraft, setWizardDraft,
       messages, addMessage,
-      toggleAppro
+      resetSession
     }}>
       {children}
     </AppContext.Provider>
