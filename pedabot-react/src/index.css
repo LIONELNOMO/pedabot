@@ -102,6 +102,29 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);hei
 .btn-cta:hover{background:var(--primary-dk);transform:translateY(-1px);box-shadow:0 6px 22px rgba(43,107,230,.38);}
 .btn-cta:active{transform:translateY(0);}
 
+/* ── Auth tabs ── */
+.auth-tabs{display:flex;background:var(--surface-2);border-radius:var(--radius-sm);padding:4px;gap:4px;margin-bottom:24px;border:1px solid var(--border);}
+.auth-tab{flex:1;padding:9px 0;border:none;background:transparent;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:13.5px;font-weight:600;color:var(--text-3);cursor:pointer;transition:all .2s;}
+.auth-tab.active{background:var(--surface);color:var(--primary);box-shadow:var(--shadow-sm);}
+
+/* ── Auth error ── */
+.auth-error{background:var(--danger-bg);border:1px solid var(--danger-border);color:var(--danger);font-size:13px;padding:10px 14px;border-radius:var(--radius-sm);margin-bottom:14px;}
+
+/* ── Divider ── */
+.auth-divider{display:flex;align-items:center;gap:10px;margin:20px 0 14px;color:var(--text-4);font-size:12px;}
+.auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* ── Demo buttons ── */
+.demo-grid{display:flex;gap:8px;}
+.demo-btn{flex:1;display:flex;align-items:center;gap:8px;padding:9px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:var(--surface-2);cursor:pointer;transition:all .2s;font-family:'DM Sans',sans-serif;}
+.demo-btn:hover{border-color:var(--primary);background:var(--primary-50);}
+.demo-avatar{width:26px;height:26px;background:var(--primary);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;}
+.demo-name{font-size:12px;font-weight:600;color:var(--text-2);text-align:left;line-height:1.2;}
+
+/* ── Logout button ── */
+.logout-btn{display:flex;align-items:center;gap:6px;padding:7px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:transparent;color:var(--text-3);cursor:pointer;transition:all .2s;font-size:13px;}
+.logout-btn:hover{border-color:var(--danger);color:var(--danger);background:var(--danger-bg);}
+
 /* ──────────── APP SHELL ──────────── */
 #pg-app{display:flex;height:100vh;flex-direction:column;}
 

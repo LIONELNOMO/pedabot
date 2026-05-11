@@ -244,7 +244,7 @@ export default function MessageItem({ msg }) {
   const { user } = useApp();
 
   const isBot = msg.sender === 'bot';
-  const initial = isBot ? 'PB' : (user || 'P').substring(0, 2).toUpperCase();
+  const initial = isBot ? 'PB' : (user?.nom || 'P').substring(0, 2).toUpperCase();
 
   switch (msg.type) {
     case 'typing':
