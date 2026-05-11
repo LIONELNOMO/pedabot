@@ -3,7 +3,7 @@ import { useApp } from '../context/AppContext';
 import MessageItem from './MessageItem';
 
 export default function ChatArea() {
-  const { messages, addMessage, user, step, setStep, setWizardDraft, wizardDraft } = useApp();
+  const { messages, addMessage, user, step, setStep, setWizardDraft, wizardDraft, resetSession } = useApp();
   const [inputValue, setInputValue] = useState('');
   const chatEndRef = useRef(null);
 
@@ -71,8 +71,23 @@ export default function ChatArea() {
     return true;
   });
 
+  const showRestart = step !== 'IDLE' && step !== 'DONE';
+
   return (
     <main className="chat-area">
+      {showRestart && (
+        <div className="restart-bar">
+          <span>Étape en cours : <strong>{
+            step === 'WAIT_NAME' ? 'Nommage' :
+            step === 'WAIT_SECTIONS' ? 'Sélection des sections' :
+            step === 'WAIT_DIFF' ? 'Niveau de difficulté' :
+            'Validation'
+          }</strong></span>
+          <button className="restart-btn" onClick={resetSession}>
+            ↺ Recommencer depuis le début
+          </button>
+        </div>
+      )}
       <div className="chat-msgs">
         {/* Message d'accueil (visible uniquement s'il n'y a aucun message) */}
         {displayMessages.length === 0 && (

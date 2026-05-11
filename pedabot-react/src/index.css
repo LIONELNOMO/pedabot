@@ -128,6 +128,9 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);hei
   color:#fff;letter-spacing:-.02em;margin-bottom:14px;
 }
 .ll-title span{color:var(--primary-200,#BFDBFE);}
+.ll-cursor{display:inline-block;width:2px;color:rgba(255,255,255,.8);animation:blink .7s step-end infinite;}
+.stream-cursor{display:inline-block;color:var(--primary);animation:blink .6s step-end infinite;font-size:1em;line-height:1;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
 
 .ll-tagline{
   font-size:17px;color:rgba(255,255,255,.75);line-height:1.65;
@@ -207,6 +210,15 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);hei
 .btn-cta:active{transform:translateY(0);}
 .btn-cta:disabled{opacity:.6;cursor:not-allowed;}
 
+.btn-guest{
+  width:100%;padding:11px;margin-top:12px;
+  background:transparent;border:1.5px solid var(--border);
+  border-radius:var(--radius);color:var(--text-3);
+  font-family:'DM Sans',sans-serif;font-size:15px;font-weight:500;
+  cursor:pointer;transition:all .2s;
+}
+.btn-guest:hover{border-color:var(--primary);color:var(--primary);background:var(--primary-50);}
+
 /* ── Auth tabs ── */
 .auth-tabs{display:flex;background:var(--surface-2);border-radius:var(--radius-sm);padding:4px;gap:4px;margin-bottom:24px;border:1px solid var(--border);}
 .auth-tab{flex:1;padding:9px 0;border:none;background:transparent;border-radius:6px;font-family:'DM Sans',sans-serif;font-size:13.5px;font-weight:600;color:var(--text-3);cursor:pointer;transition:all .2s;}
@@ -229,6 +241,24 @@ body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);hei
 /* ── Logout button ── */
 .logout-btn{display:flex;align-items:center;gap:6px;padding:7px 12px;border:1.5px solid var(--border);border-radius:var(--radius-sm);background:transparent;color:var(--text-3);cursor:pointer;transition:all .2s;font-size:13px;}
 .logout-btn:hover{border-color:var(--danger);color:var(--danger);background:var(--danger-bg);}
+
+/* ── Barre recommencer ── */
+.restart-bar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 20px;
+  background:var(--primary-50);
+  border-bottom:1px solid var(--primary-200);
+  font-size:13px;color:var(--text-2);
+  flex-shrink:0;
+}
+.restart-btn{
+  display:flex;align-items:center;gap:6px;
+  padding:5px 12px;border:1.5px solid var(--primary-200);
+  border-radius:20px;background:var(--surface);
+  color:var(--primary);font-size:12px;font-weight:600;
+  cursor:pointer;transition:all .2s;
+}
+.restart-btn:hover{background:var(--primary);color:#fff;}
 
 /* ──────────── APP SHELL ──────────── */
 #pg-app{display:flex;height:100vh;flex-direction:column;}

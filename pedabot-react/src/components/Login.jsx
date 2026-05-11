@@ -11,7 +11,7 @@ const DEMO_ACCOUNTS = [
 
 export default function Login() {
   const { loginUser } = useApp();
-  const [tab, setTab]           = useState('login');
+  const [tab, setTab] = useState('login');
   const [nom, setNom]           = useState('');
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
@@ -27,6 +27,10 @@ export default function Login() {
   const doClose = (userData, token) => {
     setIsClosing(true);
     setTimeout(() => loginUser(userData, token), 480);
+  };
+
+  const handleGuest = () => {
+    doClose({ id: 0, email: '', nom: 'Invité' }, 'guest');
   };
 
   const handleLogin = async (e) => {
@@ -226,6 +230,12 @@ export default function Login() {
                 {loading ? '◌ Création…' : 'Créer mon compte →'}
               </button>
             </form>
+          )}
+
+          {import.meta.env.VITE_GUEST_MODE === 'true' && (
+            <button className="btn-guest" type="button" onClick={handleGuest}>
+              Continuer sans compte →
+            </button>
           )}
 
         </div>

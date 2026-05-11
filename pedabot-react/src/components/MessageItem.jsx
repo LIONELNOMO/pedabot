@@ -186,9 +186,9 @@ function RecapMessage() {
       addMessage({ type: 'text', sender: 'bot', text: `✓ Terminé ! Exportez vos exercices en PDF depuis le panneau de droite.`, html: true });
     })
     .catch(err => {
-      console.error("Erreur Backend Python:", err);
+      console.error("Erreur génération:", err);
       setStep('DONE');
-      addMessage({ type: 'text', sender: 'bot', text: '⚠️ <strong>Erreur de connexion</strong> au serveur Python (localhost:8000). Vérifiez que le backend tourne.', html: true });
+      addMessage({ type: 'text', sender: 'bot', text: 'Le service est temporairement indisponible. Veuillez réessayer dans quelques instants.', html: false });
     });
   };
 

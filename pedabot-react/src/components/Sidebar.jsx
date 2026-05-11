@@ -26,8 +26,16 @@ export default function Sidebar() {
 
   const analyzeCourse = async () => {
     if (courseText.trim().length < 20) {
-      alert("△ Saisissez votre cours avant d'analyser.");
+      addMessage({ type: 'text', sender: 'bot', text: 'Veuillez d\'abord saisir votre cours dans le panneau de gauche avant de lancer l\'analyse.' });
       return;
+    }
+
+    // Si déjà analysé → on repart de zéro proprement
+    if (isAnalyzed) {
+      setIsAnalyzed(false);
+      setStep('IDLE');
+      setMessages([]);
+      setWizardDraft({ exName: '', sections: [], selSections: [], difficulty: '', lang: 'algo' });
     }
 
     setIsLoading(true);
@@ -57,17 +65,25 @@ export default function Sidebar() {
         ...prev,
         lang: data.lang,
         sections: data.sections,
-        courseText: courseText
+        courseText: courseText,
+        courseName: data.courseName || ''
       }));
 
       setStep('WAIT_NAME');
+
+      const courseNameLine = data.courseName
+        ? `Votre leçon s'appelle : <strong>${data.courseName}</strong><br>`
+        : '';
+      const sectionsLine = data.sections.length > 0
+        ? `<strong>${data.sections.length}</strong> section${data.sections.length > 1 ? 's' : ''} repérée${data.sections.length > 1 ? 's' : ''}.<br><br>`
+        : '<br>';
 
       addMessage({
         type: 'text',
         sender: 'bot',
         text: `✓ Cours reçu et analysé !<br><br>
-               Syntaxe détectée : <code>${data.langLabel}</code><br>
-               ${data.sections.length > 0 ? `<strong>${data.sections.length}</strong> grande${data.sections.length > 1 ? 's' : ''} section${data.sections.length > 1 ? 's' : ''} repérée${data.sections.length > 1 ? 's' : ''}.<br><br>` : ''}
+               ${courseNameLine}
+               ${sectionsLine}
                Quel <strong>nom</strong> voulez-vous donner à cette série d'exercices ?<br>
                <small style="color:var(--text-3)">Ex : TP Boucles — Seconde A, Consolidation Chapitre 3…</small>`,
         html: true
@@ -78,10 +94,8 @@ export default function Sidebar() {
       addMessage({
         type: 'text',
         sender: 'bot',
-        text: `⚠️ <strong>Erreur de connexion</strong> au serveur Python.<br>
-               Vérifiez que le backend tourne sur le port 8000.<br>
-               <small style="color:var(--text-3)">Lancez : uvicorn main:app --reload dans le dossier backend/</small>`,
-        html: true
+        text: `Le service est temporairement indisponible. Veuillez réessayer dans quelques instants.`,
+        html: false
       });
     } finally {
       setIsLoading(false);
@@ -117,7 +131,7 @@ export default function Sidebar() {
       setCourseText(data.text);
       setActiveTab('saisir');
     } catch (err) {
-      setExtractError('Impossible de contacter le serveur. Vérifiez que le backend tourne.');
+      setExtractError('Service temporairement indisponible. Veuillez réessayer dans quelques instants.');
     } finally {
       setIsExtracting(false);
       e.target.value = '';
@@ -171,7 +185,7 @@ export default function Sidebar() {
           </>
         )}
 
-        <button className="analyze-btn" onClick={analyzeCourse} disabled={isAnalyzed || isLoading}>
+        <button className="analyze-btn" onClick={analyzeCourse} disabled={isLoading || step === 'DONE'}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
             <polyline points="9 11 12 14 22 4"/>
             <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/>

@@ -15,9 +15,18 @@ import io
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    create_db_and_tables()
-    with Session(engine) as session:
-        seed_demo_accounts(session)
+    try:
+        print("==> Création des tables...", flush=True)
+        create_db_and_tables()
+        print("==> Tables OK", flush=True)
+        with Session(engine) as session:
+            seed_demo_accounts(session)
+        print("==> Comptes démo OK", flush=True)
+    except Exception as e:
+        import traceback
+        print(f"==> ERREUR DEMARRAGE : {e}", flush=True)
+        traceback.print_exc()
+        raise
     yield
 
 

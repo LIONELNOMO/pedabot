@@ -70,11 +70,39 @@ def detect_lang(txt: str) -> tuple[str, str]:
     return 'javascript', 'JavaScript'
 
 
+def detect_course_name(txt: str) -> str:
+    """Extrait le nom du cours/leçon/chapitre depuis le texte. Retourne '' si rien trouvé."""
+    patterns = [
+        r'(?:Cours|Course)\s*(?::\s*|–\s*|-\s*|—\s*)(.+)',
+        r'(?:Leçon|Lecon)\s*\d*\s*(?::\s*|–\s*|-\s*|—\s*)(.+)',
+        r'(?:Chapitre|Chapter)\s*\d*\s*(?::\s*|–\s*|-\s*|—\s*)(.+)',
+        r"(?:UE|Unité\s+d[''']Enseignement)\s*\d*\s*(?::\s*|–\s*|-\s*|—\s*)(.+)",
+        r'(?:Module)\s*\d*\s*(?::\s*|–\s*|-\s*|—\s*)(.+)',
+        r'(?:Thème|Theme)\s*\d*\s*(?::\s*|–\s*|-\s*|—\s*)(.+)',
+        r'(?:Séquence|Sequence)\s*\d*\s*(?::\s*|–\s*|-\s*|—\s*)(.+)',
+        r'<title[^>]*>(.+?)</title>',
+        r'<h1[^>]*>(.+?)</h1>',
+    ]
+    for p in patterns:
+        m = re.search(p, txt, re.IGNORECASE)
+        if m:
+            name = m.group(1).strip()
+            # Nettoyer les balises HTML éventuelles
+            name = re.sub(r'<[^>]+>', '', name).strip()
+            # Tronquer si trop long
+            if len(name) > 80:
+                name = name[:80].rsplit(' ', 1)[0] + '…'
+            if len(name) >= 3:
+                return name
+    return ''
+
+
 async def analyze_course(req: AnalyzeRequest) -> AnalyzeResponse:
     """Point d'entrée : analyse du cours."""
     lang_code, lang_label = detect_lang(req.courseText)
     sections = detect_sections(req.courseText)
-    return AnalyzeResponse(lang=lang_code, langLabel=lang_label, sections=sections)
+    course_name = detect_course_name(req.courseText)
+    return AnalyzeResponse(lang=lang_code, langLabel=lang_label, sections=sections, courseName=course_name)
 
 
 # ══════════════════════════════════════════════════════════════

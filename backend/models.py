@@ -34,6 +34,7 @@ class AnalyzeResponse(BaseModel):
     lang: str
     langLabel: str
     sections: List[SectionItem]
+    courseName: Optional[str] = ""
 
 class ExerciseOutput(BaseModel):
     level: str
