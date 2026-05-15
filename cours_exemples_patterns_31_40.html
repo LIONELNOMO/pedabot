@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Exemples de cours — Patterns 31 à 40</title>
+</head>
+<body>
+
+<h1>Exemples de cours à coller dans PédaBot — Patterns 31 à 40</h1>
+<hr>
+
+<h2>Pattern 31 — Tableau / Liste / Array</h2>
+<p><b>Marqueurs :</b> TABLEAU[, variable[i], .append(), .push(), new Array(), parcours de</p>
+<pre>
+Cours : Les Tableaux et Listes
+
+I. Déclaration et utilisation d'un tableau en algorithmique
+Un tableau est une structure de données qui stocke plusieurs éléments de même type.
+
+Déclaration : TABLEAU notes[10] : Entier
+Accès à un élément : notes[i] ← 15
+Parcours du tableau :
+POUR i DE 0 À 9 FAIRE
+    ÉCRIRE(notes[i])
+FIN POUR
+
+II. Les listes en Python
+En Python, une liste est dynamique et peut contenir des types différents.
+
+notes = []
+notes.append(15)
+notes.append(12)
+notes.append(18)
+print(notes[0])
+
+for note in notes:
+    print(note)
+
+III. Les tableaux en JavaScript
+let notes = new Array(10);
+notes[0] = 15;
+notes.push(12);
+
+for (let i = 0; i < notes.length; i++) {
+    console.log(notes[i]);
+}
+
+NB : En algorithmique, l'indice du premier élément est 0. La taille du tableau est fixe.
+</pre>
+<hr>
+
+<h2>Pattern 32 — Comparaison</h2>
+<p><b>Marqueurs :</b> contrairement à, à l'opposé de, tandis que, alors que, différence entre, comparé à, vs, versus</p>
+<pre>
+Cours : Comparaison des Boucles POUR et TANT QUE
+
+I. Différences fondamentales
+La boucle POUR est utilisée quand le nombre d'itérations est connu à l'avance,
+tandis que la boucle TANT QUE convient quand ce nombre est indéterminé.
+
+Contrairement à la boucle POUR, la boucle TANT QUE peut ne jamais s'exécuter
+si la condition est fausse dès le départ.
+
+La boucle POUR gère automatiquement le compteur, alors que dans TANT QUE
+le programmeur doit modifier lui-même la variable de contrôle.
+
+II. Comparaison avec RÉPÉTER JUSQU'À
+Comparé à TANT QUE, RÉPÉTER JUSQU'À garantit une exécution minimale d'un tour.
+À l'opposé de TANT QUE (condition testée en début), RÉPÉTER JUSQU'À teste en fin de boucle.
+La différence entre ces deux structures réside donc dans le moment du test de la condition.
+
+Par opposition à POUR, ni TANT QUE ni RÉPÉTER JUSQU'À ne gèrent automatiquement un compteur.
+</pre>
+<hr>
+
+<h2>Pattern 33 — Erreur / Piège</h2>
+<p><b>Marqueurs :</b> erreur courante, erreur classique, piège fréquent, attention à ne pas, ne pas confondre, faute classique, risque d'erreur</p>
+<pre>
+Cours : Les Erreurs Classiques en Algorithmique
+
+I. Erreurs courantes avec les boucles
+Une erreur classique consiste à modifier la variable de contrôle à l'intérieur d'une boucle POUR.
+Le piège fréquent du débutant est d'oublier d'initialiser le compteur avant une boucle TANT QUE.
+Attention à ne pas confondre la condition de continuation et la condition d'arrêt.
+Un risque d'erreur courant est d'écrire une condition toujours vraie, créant une boucle infinie.
+
+II. Pièges classiques avec les tableaux
+Ne pas confondre la taille du tableau (N) et l'indice du dernier élément (N-1).
+Une faute fréquente est d'accéder à l'indice N d'un tableau de taille N (hors bornes).
+Attention à ne pas oublier d'initialiser les éléments du tableau avant de les utiliser.
+Le piège classique en C est de ne pas vérifier les bornes, contrairement à Java qui lève une exception.
+
+III. Erreurs de logique
+Ne pas confondre l'affectation (=) et le test d'égalité (==) dans une condition.
+Une erreur classique est d'inverser les conditions dans un SI/SINON.
+</pre>
+<hr>
+
+<h2>Pattern 34 — Trace d'exécution</h2>
+<p><b>Marqueurs :</b> tableau de trace, trace d'exécution, déroulement pas à pas, valeurs successives, à l'itération N, état du programme</p>
+<pre>
+Cours : La Trace d'Exécution d'un Algorithme
+
+I. Principe du tableau de trace
+La trace d'exécution permet de suivre l'évolution des variables pas à pas.
+On construit un tableau de trace avec une colonne par variable et une ligne par itération.
+Le déroulement pas à pas révèle les erreurs de logique invisibles à la simple lecture.
+
+II. Exemple de trace d'exécution
+Algorithme : calculer la somme des entiers de 1 à 4.
+
+i ← 1
+somme ← 0
+TANT QUE i <= 4 FAIRE
+    somme ← somme + i
+    i ← i + 1
+FIN TANT QUE
+
+Tableau de trace :
+Itération | i | somme | condition i<=4
+Init      | 1 |   0   |      —
+    1     | 2 |   1   |    VRAI
+    2     | 3 |   3   |    VRAI
+    3     | 4 |   6   |    VRAI
+    4     | 5 |  10   |    VRAI
+    5     | 5 |  10   |    FAUX → sortie
+
+Après exécution, somme vaut 10 et i vaut 5.
+Les valeurs successives de somme sont : 0, 1, 3, 6, 10.
+L'état du programme à la sortie : i = 5, somme = 10.
+</pre>
+<hr>
+
+<h2>Pattern 35 — Entrée / Sortie</h2>
+<p><b>Marqueurs :</b> prend en entrée, retourne en sortie, données d'entrée, valeur retournée, paramètres d'entrée, entrée :, sortie :</p>
+<pre>
+Cours : Contrat d'Interface des Fonctions
+
+I. Identification des entrées et sorties
+Une fonction bien documentée spécifie clairement ses données d'entrée et sa valeur de retour.
+
+Fonction MAXIMUM :
+- Entrée : a (Entier), b (Entier) — les deux valeurs à comparer
+- Sortie : (Entier) — la plus grande des deux valeurs
+- La fonction prend en entrée deux entiers et retourne en sortie le plus grand.
+
+Fonction MOYENNE :
+- Entrées : notes (Tableau de Réels), n (Entier, nombre de notes)
+- Sortie : (Réel) — la moyenne calculée
+- Paramètre d'entrée n : nombre d'éléments valides dans le tableau
+- Valeur retournée : somme / n, avec précondition n > 0
+
+II. Notation formelle
+Entrée  : n (Entier, n > 0), t[n] (Tableau d'Entiers)
+Sortie  : résultat (Réel)
+La fonction retourne en sortie la valeur calculée à partir des paramètres d'entrée.
+</pre>
+<hr>
+
+<h2>Pattern 36 — Préconditions / Postconditions</h2>
+<p><b>Marqueurs :</b> précondition, postcondition, à condition que, sous réserve que, garantit que, assure que, contrat de</p>
+<pre>
+Cours : Le Contrat de Programmation par Contrat
+
+I. Préconditions et postconditions
+La programmation par contrat repose sur des préconditions et des postconditions.
+Une précondition est une condition qui doit être vraie avant l'exécution de la fonction.
+Une postcondition est une condition garantie vraie après l'exécution.
+
+Fonction DIVISION(a, b) :
+- Précondition : b ≠ 0 (le diviseur ne doit pas être nul)
+- Postcondition : le résultat retourné garantit que résultat × b = a
+
+Fonction RACINE_CARREE(x) :
+- Précondition : x >= 0 (sous réserve que x soit positif ou nul)
+- Postcondition : assure que résultat² = x avec une précision donnée
+
+II. Invariant de boucle
+Un invariant est une propriété qui garantit que la boucle progresse correctement.
+À condition que l'invariant soit respecté à chaque itération, l'algorithme est correct.
+Le contrat de la boucle assure que la variable de résultat converge vers la valeur attendue.
+</pre>
+<hr>
+
+<h2>Pattern 37 — Conversion de Langage</h2>
+<p><b>Marqueurs :</b> équivalent en Python, s'écrit en Python, se traduit en JavaScript, correspond en Python, la même chose en JavaScript, présence simultanée de code algo + Python ou JS</p>
+<pre>
+Cours : Correspondances entre Algorithmique, Python et JavaScript
+
+I. Structures de contrôle
+La boucle POUR en algorithmique a son équivalent en Python avec for...in range().
+L'alternative SI/SINON se traduit en JavaScript par if...else.
+La boucle TANT QUE correspond en Python au mot-clé while.
+La même chose en JavaScript s'écrit avec while (condition) { }.
+
+II. Tableau de correspondances complètes
+Algorithmique               | Python              | JavaScript
+----------------------------+---------------------+---------------------------
+POUR i DE 1 À N FAIRE      | for i in range(1,N) | for (let i=1; i<=N; i++)
+TANT QUE cond FAIRE        | while cond:         | while (cond) {
+SI cond ALORS              | if cond:            | if (cond) {
+ÉCRIRE(x)                  | print(x)            | console.log(x)
+LIRE(x)                    | x = input()         | x = prompt()
+RETOURNER v                | return v            | return v;
+FONCTION f(a,b) : Type     | def f(a, b):        | function f(a, b) {
+</pre>
+<hr>
+
+<h2>Pattern 38 — Complexité Algorithmique</h2>
+<p><b>Marqueurs :</b> complexité en temps, complexité temporelle, O(n), O(n²), O(log n), plus efficace que, coût en mémoire, nombre d'opérations, algorithme optimal</p>
+<pre>
+Cours : Analyse de la Complexité Algorithmique
+
+I. Notations de complexité
+La complexité temporelle mesure le nombre d'opérations en fonction de la taille n des données.
+La notation O(1) désigne un algorithme optimal à temps constant, indépendant de n.
+La complexité O(log n) caractérise la recherche binaire, plus efficace que la recherche linéaire.
+La complexité O(n) correspond à un parcours simple de tableau ou de liste.
+La complexité O(n log n) est celle du tri rapide et du tri fusion en moyenne.
+La complexité O(n²) désigne les algorithmes quadratiques comme le tri à bulles.
+
+II. Comparaison de complexités
+Le tri à bulles a une complexité O(n²), moins efficace que le tri fusion en O(n log n).
+La recherche séquentielle a un coût en temps de O(n), tandis que la recherche binaire atteint O(log n).
+Un algorithme optimal pour le tri par comparaison ne peut pas dépasser O(n log n).
+Le nombre d'opérations d'une boucle imbriquée à deux niveaux croît en O(n²).
+La complexité en espace de la récursivité est O(n) en raison de la pile d'appels.
+</pre>
+<hr>
+
+<h2>Pattern 39 — Règle Absolue</h2>
+<p><b>Marqueurs :</b> il faut toujours, on ne doit jamais, ne jamais, principe fondamental, règle d'or, toujours vérifier, interdit de</p>
+<pre>
+Cours : Les Règles Fondamentales de la Programmation
+
+I. Règles absolues sur les variables
+Il faut toujours initialiser une variable avant de l'utiliser dans un calcul.
+On ne doit jamais modifier la variable de contrôle à l'intérieur d'une boucle POUR.
+Il faut toujours vérifier qu'un diviseur est non nul avant d'effectuer une division.
+Ne jamais supposer la valeur initiale d'une variable non initialisée.
+
+II. Règles absolues sur les tableaux
+Il faut toujours s'assurer que l'indice est compris entre 0 et taille-1.
+On ne doit jamais accéder à un tableau avec un indice négatif ou supérieur à sa taille.
+Le principe fondamental des tableaux : l'indice du premier élément est toujours 0.
+
+III. Règles absolues sur les fonctions
+Toujours vérifier les préconditions d'une fonction avant de l'appeler.
+Il est interdit de retourner un pointeur vers une variable locale en C.
+La règle d'or de la modularité : une fonction doit effectuer une seule tâche bien définie.
+On ne doit jamais ignorer la valeur de retour d'une fonction signalant une erreur.
+</pre>
+<hr>
+
+<h2>Pattern 40 — Schéma / Organigramme / Diagramme</h2>
+<p><b>Marqueurs :</b> le schéma montre, comme le montre la figure, représenté par un diagramme, organigramme, représentation graphique, diagramme de</p>
+<pre>
+Cours : Les Organigrammes Algorithmiques
+
+I. Représentation graphique des algorithmes
+Un organigramme est une représentation graphique du déroulement d'un algorithme.
+Le schéma ci-dessous montre les symboles standards utilisés dans un organigramme.
+Comme le montre la figure suivante, chaque forme géométrique a une signification précise.
+
+Symboles standards :
+- Ovale       → Début / Fin du programme
+- Rectangle   → Instruction ou traitement
+- Losange     → Condition ou test (OUI/NON)
+- Parallélogramme → Entrée (LIRE) ou Sortie (ÉCRIRE)
+- Flèche      → Sens du flux d'exécution
+
+II. Organigramme d'une boucle TANT QUE
+Le diagramme de la boucle TANT QUE se présente comme suit :
+
+[DÉBUT]
+   ↓
+[Initialisation]
+   ↓
+[Test condition] → NON → [FIN]
+   ↓ OUI
+[Instructions]
+   ↓
+[Retour au test] ↑ (boucle)
+
+La représentation graphique de ce diagramme montre clairement le retour en arrière.
+Comme le montre cet organigramme, la condition est vérifiée avant chaque itération.
+
+III. Diagramme de la structure SI/SINON
+Le diagramme de la structure conditionnelle SI/SINON illustre le branchement :
+
+[Test]
+  ↓ OUI         ↓ NON
+[Bloc SI]    [Bloc SINON]
+     ↓              ↓
+     [Suite du programme]
+</pre>
+<hr>
+
+<p><b>Fichier précédent :</b> cours_exemples_patterns_21_30.html</p>
+<p>Fin des 4 groupes — 40 patterns couverts.</p>
+
+</body>
+</html>

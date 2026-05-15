@@ -1,8 +1,46 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 
+const API_URL = import.meta.env.VITE_API_URL;
+
 export default function RightPanel() {
-  const { wizardDraft, step, messages, resetSession } = useApp();
+  const { wizardDraft, step, messages, resetSession, token: authToken } = useApp();
+
+  // ── Copies ──
+  const [myExercises, setMyExercises] = useState(null);
+  const [selectedEx,  setSelectedEx]  = useState(null);
+  const [submissions, setSubmissions] = useState(null);
+  const [openedSub,   setOpenedSub]   = useState(null); // copie affichée en grand
+
+  const fmtDate = (iso) => new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
+  const fmtTime = (iso) => new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+
+  const fetchMyExercises = async () => {
+    if (!authToken || authToken === 'guest') return;
+    setMyExercises('loading');
+    setSelectedEx(null);
+    setSubmissions(null);
+    try {
+      const res  = await fetch(`${API_URL}/api/exercises/mine`, { headers: { Authorization: `Bearer ${authToken}` } });
+      const data = await res.json();
+      setMyExercises(Array.isArray(data) ? data : []);
+    } catch { setMyExercises([]); }
+  };
+
+  const fetchSubmissions = async (ex) => {
+    setSelectedEx(ex);
+    setSubmissions('loading');
+    try {
+      const res  = await fetch(`${API_URL}/api/eleve/${ex.token}/submissions`, { headers: { Authorization: `Bearer ${authToken}` } });
+      const data = await res.json();
+      setSubmissions(Array.isArray(data) ? data : []);
+    } catch { setSubmissions([]); }
+  };
+
+  // Recharger quand un exercice est généré (step passe à DONE)
+  useEffect(() => {
+    if (step === 'DONE') fetchMyExercises();
+  }, [step]);
 
   // Stats dynamiques
   const exCount = wizardDraft.exCount || 0;
@@ -159,6 +197,82 @@ export default function RightPanel() {
         </svg>
         Nouvelle session
       </button>
+
+      {/* ── COPIES ÉLÈVES ── */}
+      {authToken && authToken !== 'guest' && (
+        <div className="rp-copies">
+          <div className="rp-copies-head">
+            <span className="rp-sec-title" style={{ margin: 0 }}>✉ Copies élèves</span>
+            <button className="cp-refresh" onClick={fetchMyExercises}>↻</button>
+          </div>
+
+          {/* Liste des exercices partagés */}
+          {!selectedEx && (
+            <>
+              {myExercises === null && (
+                <div className="rp-copies-empty">Les copies apparaîtront ici après envoi.</div>
+              )}
+              {myExercises === 'loading' && (
+                <div className="rp-copies-empty">◌ Chargement…</div>
+              )}
+              {Array.isArray(myExercises) && myExercises.length === 0 && (
+                <div className="rp-copies-empty">Aucune copie reçue pour l'instant.</div>
+              )}
+              {Array.isArray(myExercises) && myExercises.map(ex => (
+                <button key={ex.token} className="rp-ex-row" onClick={() => fetchSubmissions(ex)}>
+                  <div className="rp-ex-info">
+                    <div className="rp-ex-titre">{ex.titre}</div>
+                  </div>
+                  <span className={`cp-count ${ex.submission_count > 0 ? 'has' : ''}`}>{ex.submission_count}</span>
+                </button>
+              ))}
+            </>
+          )}
+
+          {/* Liste des copies d'un exercice */}
+          {selectedEx && (
+            <>
+              <button className="rp-back" onClick={() => { setSelectedEx(null); setSubmissions(null); }}>
+                ‹ {selectedEx.titre}
+              </button>
+              {submissions === 'loading' && <div className="rp-copies-empty">◌ Chargement…</div>}
+              {Array.isArray(submissions) && submissions.length === 0 && (
+                <div className="rp-copies-empty">Aucune copie pour cet exercice.</div>
+              )}
+              {Array.isArray(submissions) && submissions.map((s, i) => (
+                <button key={i} className="rp-sub-row" onClick={() => setOpenedSub({ ...s, exTitre: selectedEx.titre })}>
+                  <div className="rp-sub-avatar">{(s.eleve_prenom || '?').substring(0, 2).toUpperCase()}</div>
+                  <div className="rp-sub-info">
+                    <div className="rp-sub-name">{s.eleve_prenom}</div>
+                    <div className="rp-sub-date">{fmtDate(s.submitted_at)} {fmtTime(s.submitted_at)}</div>
+                  </div>
+                  <span className="rp-sub-arrow">›</span>
+                </button>
+              ))}
+            </>
+          )}
+        </div>
+      )}
+
+      {/* ── MODALE COPIE COMPLÈTE ── */}
+      {openedSub && (
+        <div className="copy-overlay" onClick={() => setOpenedSub(null)}>
+          <div className="copy-modal" onClick={e => e.stopPropagation()}>
+            <div className="copy-modal-head">
+              <div className="copy-modal-who">
+                <div className="copy-modal-avatar">{(openedSub.eleve_prenom || '?').substring(0, 2).toUpperCase()}</div>
+                <div>
+                  <div className="copy-modal-name">{openedSub.eleve_prenom}</div>
+                  <div className="copy-modal-meta">{openedSub.exTitre} · {fmtDate(openedSub.submitted_at)} {fmtTime(openedSub.submitted_at)}</div>
+                </div>
+              </div>
+              <button className="copy-modal-close" onClick={() => setOpenedSub(null)}>✕</button>
+            </div>
+            <div className="copy-modal-label">Réponses de l'élève</div>
+            <div className="copy-modal-body">{openedSub.reponses}</div>
+          </div>
+        </div>
+      )}
     </aside>
   );
 }

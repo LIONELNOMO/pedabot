@@ -54,6 +54,12 @@ class DeepenResponse(BaseModel):
 #  PARTAGE ÉLÈVES
 # ══════════════════════════════════════
 
+class ShareExerciseRequest(BaseModel):
+    titre: str
+    exercise: dict
+    lang: str = ""
+    difficulty: str = ""
+
 class AssignRequest(BaseModel):
     titre: str
     exercise: dict
@@ -62,4 +68,5 @@ class AssignRequest(BaseModel):
     emails: List[str]
 
 class SubmitRequest(BaseModel):
+    eleve_prenom: str = ""
     reponses: str

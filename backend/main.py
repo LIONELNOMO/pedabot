@@ -5,7 +5,7 @@ from sqlmodel import Session, select
 from models import AnalyzeRequest, AnalyzeResponse
 from models import GenerationRequest, GenerationResponse
 from models import DeepenRequest, DeepenResponse
-from models import AssignRequest, SubmitRequest
+from models import ShareExerciseRequest, AssignRequest, SubmitRequest
 from engine import analyze_course, generate_exercises, deepen_exercise
 from database import engine, create_db_and_tables
 from auth_models import RegisterRequest, LoginRequest, AuthResponse, UserOut
@@ -183,6 +183,85 @@ async def api_get_eleves(payload=Depends(require_teacher)):
     with Session(engine) as session:
         eleves = session.exec(select(User).where(User.role == 'eleve')).all()
         return [{"id": e.id, "nom": e.nom, "email": e.email} for e in eleves]
+
+
+@app.post("/api/exercises/share")
+async def api_share_exercise(req: ShareExerciseRequest, payload=Depends(require_teacher)):
+    with Session(engine) as session:
+        ex = ExerciseDB(
+            teacher_id  = int(payload["sub"]),
+            teacher_nom = payload["nom"],
+            titre       = req.titre,
+            contenu     = json.dumps(req.exercise, ensure_ascii=False),
+            lang        = req.lang,
+            difficulty  = req.difficulty,
+        )
+        session.add(ex)
+        session.commit()
+        session.refresh(ex)
+        token = secrets.token_urlsafe(6)
+        link  = SharedLink(token=token, exercise_id=ex.id, teacher_id=int(payload["sub"]))
+        session.add(link)
+        session.commit()
+        return {"token": token}
+
+
+@app.get("/api/eleve/{token}")
+async def api_eleve_view(token: str):
+    with Session(engine) as session:
+        link = session.get(SharedLink, token)
+        if not link:
+            raise HTTPException(status_code=404, detail="Lien invalide ou introuvable.")
+        ex = session.get(ExerciseDB, link.exercise_id)
+        if not ex:
+            raise HTTPException(status_code=404, detail="Exercice introuvable.")
+        return {
+            "token":       token,
+            "titre":       ex.titre,
+            "teacher_nom": ex.teacher_nom,
+            "exercise":    json.loads(ex.contenu),
+            "lang":        ex.lang,
+            "difficulty":  ex.difficulty,
+        }
+
+
+@app.post("/api/eleve/{token}/submit")
+async def api_eleve_submit(token: str, req: SubmitRequest):
+    with Session(engine) as session:
+        if not session.get(SharedLink, token):
+            raise HTTPException(status_code=404, detail="Lien invalide.")
+        sub = Submission(token=token, eleve_prenom=req.eleve_prenom, reponses=req.reponses)
+        session.add(sub)
+        session.commit()
+        return {"success": True}
+
+
+@app.get("/api/eleve/{token}/submissions")
+async def api_get_submissions(token: str, payload=Depends(require_teacher)):
+    with Session(engine) as session:
+        link = session.get(SharedLink, token)
+        if not link or link.teacher_id != int(payload["sub"]):
+            raise HTTPException(status_code=403, detail="Accès refusé.")
+        subs = session.exec(select(Submission).where(Submission.token == token)).all()
+        return [{"eleve_prenom": s.eleve_prenom, "reponses": s.reponses, "submitted_at": s.submitted_at.isoformat()} for s in subs]
+
+
+@app.get("/api/exercises/mine")
+async def api_my_exercises(payload=Depends(require_teacher)):
+    with Session(engine) as session:
+        links = session.exec(select(SharedLink).where(SharedLink.teacher_id == int(payload["sub"]))).all()
+        result = []
+        for link in links:
+            ex    = session.get(ExerciseDB, link.exercise_id)
+            count = len(session.exec(select(Submission).where(Submission.token == link.token)).all())
+            result.append({
+                "token":            link.token,
+                "titre":            ex.titre if ex else "Exercice supprimé",
+                "submission_count": count,
+                "created_at":       link.created_at.isoformat(),
+                "difficulty":       ex.difficulty if ex else "",
+            })
+        return sorted(result, key=lambda x: x["created_at"], reverse=True)
 
 
 @app.post("/api/exercises/assign")

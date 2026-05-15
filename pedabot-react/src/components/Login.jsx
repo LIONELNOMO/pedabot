@@ -12,7 +12,7 @@ const DEMO_ACCOUNTS = [
 export default function Login() {
   const { loginUser } = useApp();
   const [tab, setTab] = useState('login');
-  const [role, setRole]         = useState('prof');
+  const role = 'prof';
   const [nom, setNom]           = useState('');
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
@@ -21,7 +21,7 @@ export default function Login() {
   const [loading, setLoading]   = useState(false);
   const [isClosing, setIsClosing] = useState(false);
 
-  const reset = () => { setNom(''); setEmail(''); setPassword(''); setConfirm(''); setError(''); setRole('prof'); };
+  const reset = () => { setNom(''); setEmail(''); setPassword(''); setConfirm(''); setError(''); };
   const switchTab = (t) => { setTab(t); reset(); };
   const fillDemo = (d) => { setEmail(d.email); setPassword(d.password); setError(''); };
 
@@ -210,18 +210,8 @@ export default function Login() {
           {tab === 'register' && (
             <form onSubmit={handleRegister} className="auth-form">
 
-              <label className="llabel">Je suis</label>
-              <div className="role-toggle">
-                <button type="button" className={`role-btn ${role === 'prof' ? 'active' : ''}`} onClick={() => setRole('prof')}>
-                  ◈ Professeur
-                </button>
-                <button type="button" className={`role-btn ${role === 'eleve' ? 'active' : ''}`} onClick={() => setRole('eleve')}>
-                  ★ Élève
-                </button>
-              </div>
-
               <label className="llabel">Nom complet</label>
-              <input className="linput" type="text" placeholder={role === 'prof' ? 'M. Kamga, Mme Ebolo…' : 'Jean-Paul, Amina…'}
+              <input className="linput" type="text" placeholder="M. Kamga, Mme Ebolo…"
                 value={nom} onChange={e => setNom(e.target.value)} />
 
               <label className="llabel">Email</label>

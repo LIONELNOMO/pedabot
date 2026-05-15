@@ -1750,14 +1750,20 @@ def _make_analyse_exercise(sec, level, pat_type, is_algo, is_py, prefix) -> Exer
     if level == 'moyen':
         return ExerciseOutput(
             level='moyen',
-            title=f"{meta['nom']} à compléter — {prefix}{title_sec}",
-            body=meta['moyen_body'],
+            title=f"Bloom 2-3 — Comprendre et Appliquer — {meta['nom']} — {prefix}{title_sec}",
+            body=(
+                f"<strong>Bloom 2 — Comprendre :</strong><br>"
+                f"Expliquez avec vos propres mots le principe de cet exercice et pourquoi "
+                f"il est important dans le contexte de «&nbsp;{title_sec}&nbsp;».<br><br>"
+                f"<strong>Bloom 3 — Appliquer :</strong><br>"
+                f"{meta['moyen_body']}"
+            ),
             code=meta.get('moyen_code')
         )
 
     return ExerciseOutput(
         level='difficile',
-        title=f"{meta['nom']} — Production — {prefix}{title_sec}",
+        title=f"Bloom 4-5-6 — Analyser, Évaluer, Créer — {meta['nom']} — {prefix}{title_sec}",
         body=meta['diff_body'],
         code=None
     )
@@ -1854,6 +1860,7 @@ async def generate_exercises(req: GenerationRequest) -> list[ExerciseOutput]:
         for d in diffs:
             ex = _make_exercise(sec, d, is_pour, is_tantque, is_if, is_algo, is_py, prefix, req.appro)
             ex.section = sec
+            ex.title = f"Exercice {len(out) + 1} — {sec.title}"
             out.append(ex)
 
     return out
@@ -2044,22 +2051,32 @@ def _make_syntaxe_exercise(sec, level, pat_type, is_algo, is_py, prefix) -> Exer
         trou = meta['trous_algo'] if is_algo else (meta['trous_py'] if is_py else meta['trous_js'])
         return ExerciseOutput(
             level='moyen',
-            title=f"Compléter la syntaxe — {meta['nom']}",
+            title=f"Bloom 2-3 — Comprendre et Appliquer — {meta['nom']}",
             body=(
-                f"<strong>Objectif :</strong> Compléter le code manquant pour faire fonctionner l'algorithme.<br><br>"
-                f"Remplacez chaque <code>__</code> par le bon mot-clé ou la bonne valeur :"
+                f"<strong>Bloom 2 — Comprendre :</strong><br>"
+                f"Avant de compléter le code, expliquez en une phrase ce que fait cette structure "
+                f"et pourquoi chaque mot-clé est nécessaire.<br><br>"
+                f"<strong>Bloom 3 — Appliquer :</strong><br>"
+                f"Complétez le code en remplaçant chaque <code>__</code> par le bon mot-clé ou la bonne valeur :"
             ),
             code=trou
         )
 
-    # Niveau difficile
+    # Niveau difficile — Bloom 4-5-6
     return ExerciseOutput(
         level='difficile',
-        title=f"Production — {meta['nom']} : {titre_scenario}",
+        title=f"Bloom 4-5-6 — Analyser, Évaluer, Créer — {meta['nom']}",
         body=(
-            f"<strong>Objectif :</strong> Écrire un programme complet de zéro.<br><br>"
-            f"<strong>Énoncé :</strong> {enonce}<br><br>"
-            f"<em>Conseil : testez votre algorithme avec des valeurs connues avant de rendre.</em>"
+            f"<strong>Bloom 4 — Analyser :</strong><br>"
+            f"Analysez la structure de <strong>{meta['nom']}</strong> : "
+            f"dans quel cas précis l'utiliser plutôt qu'une autre structure ? "
+            f"Quelles sont ses limites et risques courants ?<br><br>"
+            f"<strong>Bloom 5 — Évaluer :</strong><br>"
+            f"Pour l'énoncé suivant, justifiez votre choix de structure "
+            f"et estimez sa complexité : <em>{enonce}</em><br><br>"
+            f"<strong>Bloom 6 — Créer :</strong><br>"
+            f"Écrivez un programme complet de zéro qui résout l'énoncé ci-dessus.<br>"
+            f"<em>Conseil : posez d'abord l'algorithme sur papier avant de coder.</em>"
         ),
         code=code_exemple
     )
@@ -2147,11 +2164,262 @@ def _make_exercise(sec, level, is_pour, is_tantque, is_if, is_algo, is_py, prefi
         )
 
     # ═══════════════════════════════════════
-    #  NIVEAU MOYEN — Texte à trous
+    #  NIVEAU MOYEN — Bloom 2-3 (Comprendre + Appliquer)
     # ═══════════════════════════════════════
     if level == 'moyen':
 
         if pat_type and pat_data:
+            kw1 = pat_data[0]['keyword'] if pat_data else sec.title
+            kw2 = pat_data[1]['keyword'] if len(pat_data) > 1 else kw1
+
+            BLOOM_MOYEN = {
+                'definition': (
+                    "Compréhension et application — Taxonomie de Bloom (niveaux 2-3)",
+                    f"<strong>Bloom 2 — Comprendre :</strong><br>"
+                    f"Sans regarder vos notes, reformulez avec vos propres mots la définition de "
+                    f"<em>{kw1}</em>. Résumez l'essentiel en 2 phrases claires. "
+                    f"Expliquez ensuite ce qui différencie <em>{kw1}</em> de <em>{kw2}</em>.<br><br>"
+                    f"<strong>Bloom 3 — Appliquer :</strong><br>"
+                    f"Utilisez la notion de <em>{kw1}</em> pour expliquer une situation concrète "
+                    f"de votre vie quotidienne ou de votre domaine d'études. "
+                    f"Décrivez précisément comment ce concept s'y manifeste."
+                ),
+                'cause': (
+                    "Compréhension et application des causes — Bloom (niveaux 2-3)",
+                    f"<strong>Bloom 2 — Comprendre :</strong><br>"
+                    f"Résumez avec vos propres mots les causes de <em>{kw1}</em> vues en cours. "
+                    f"Expliquez le mécanisme : comment chaque cause conduit-elle à l'effet final ?<br><br>"
+                    f"<strong>Bloom 3 — Appliquer :</strong><br>"
+                    f"Choisissez une situation réelle ou un problème concret de votre environnement "
+                    f"et identifiez-y les mêmes types de causes que celles étudiées pour <em>{kw1}</em>. "
+                    f"Expliquez la correspondance."
+                ),
+                'consequence': (
+                    "Compréhension et application des conséquences — Bloom (niveaux 2-3)",
+                    f"<strong>Bloom 2 — Comprendre :</strong><br>"
+                    f"Expliquez avec vos propres mots les conséquences de <em>{kw1}</em>. "
+                    f"Résumez les 3 effets principaux et expliquez pourquoi ils surviennent.<br><br>"
+                    f"<strong>Bloom 3 — Appliquer :</strong><br>"
+                    f"Utilisez ce que vous avez appris pour prédire les conséquences d'un cas similaire "
+                    f"de votre choix (réel ou hypothétique). "
+                    f"Expliquez pourquoi vous attendez ces conséquences-là."
+                ),
+                'etape': (
+                    "Compréhension et application du processus — Bloom (niveaux 2-3)",
+                    f"<strong>Bloom 2 — Comprendre :</strong><br>"
+                    f"Expliquez dans vos propres mots chaque étape de <em>{kw1}</em> vue en cours. "
+                    f"Après chaque étape, précisez pourquoi cet ordre est logique "
+                    f"et ce qui se passe concrètement à ce stade.<br><br>"
+                    f"<strong>Bloom 3 — Appliquer :</strong><br>"
+                    f"Appliquez ce processus à une situation concrète de votre choix. "
+                    f"Décrivez comment vous suivriez chaque étape de <em>{kw1}</em> "
+                    f"pour résoudre un problème réel."
+                ),
+                'caracteristique': (
+                    "Compréhension et application des caractéristiques — Bloom (niveaux 2-3)",
+                    f"<strong>Bloom 2 — Comprendre :</strong><br>"
+                    f"Expliquez pourquoi chaque caractéristique de <em>{kw1}</em> est importante. "
+                    f"Reformulez sans regarder vos notes. "
+                    f"Quelle caractéristique vous semble la plus facile à oublier et pourquoi ?<br><br>"
+                    f"<strong>Bloom 3 — Appliquer :</strong><br>"
+                    f"Utilisez les caractéristiques de <em>{kw1}</em> comme une grille d'analyse : "
+                    f"observez un exemple concret dans la réalité et vérifiez point par point "
+                    f"si cet exemple possède toutes les caractéristiques attendues."
+                ),
+                'fonction': (
+                    "Compréhension et application des fonctions — Bloom (niveaux 2-3)",
+                    f"<strong>Bloom 2 — Comprendre :</strong><br>"
+                    f"Expliquez avec vos propres mots le rôle et la fonction de <em>{kw1}</em>. "
+                    f"Pourquoi est-il utile ? Que se passerait-il s'il n'existait pas ?<br><br>"
+                    f"<strong>Bloom 3 — Appliquer :</strong><br>"
+                    f"Montrez comment <em>{kw1}</em> s'applique dans une situation pratique concrète "
+                    f"de votre choix. Décrivez le problème, puis expliquez comment "
+                    f"<em>{kw1}</em> intervient pour le résoudre."
+                ),
+                'exemple': (
+                    "Compréhension et application des exemples — Bloom (niveaux 2-3)",
+                    f"<strong>Bloom 2 — Comprendre :</strong><br>"
+                    f"Expliquez pourquoi les exemples de <em>{kw1}</em> vus en cours sont représentatifs "
+                    f"du concept. Quel point commun essentiel partagent-ils tous ?<br><br>"
+                    f"<strong>Bloom 3 — Appliquer :</strong><br>"
+                    f"Trouvez un exemple de <em>{kw1}</em> dans votre environnement quotidien "
+                    f"ou dans votre domaine. Expliquez pourquoi c'est un bon exemple "
+                    f"et en quoi il respecte la définition vue en cours."
+                ),
+                'date': (
+                    "Compréhension et mise en contexte — Bloom (niveaux 2-3)",
+                    f"<strong>Bloom 2 — Comprendre :</strong><br>"
+                    f"Expliquez dans vos propres mots ce qui s'est passé lors de <em>{kw1}</em> "
+                    f"et pourquoi c'est important dans le domaine étudié. "
+                    f"Quelle en est la signification principale ?<br><br>"
+                    f"<strong>Bloom 3 — Appliquer :</strong><br>"
+                    f"Construisez une ligne du temps : placez <em>{kw1}</em> avec au moins "
+                    f"2 événements antérieurs et 2 événements postérieurs que vous connaissez. "
+                    f"Expliquez le lien entre ces événements."
+                ),
+                'avantage': (
+                    "Compréhension et application des avantages/inconvénients — Bloom (niveaux 2-3)",
+                    f"<strong>Bloom 2 — Comprendre :</strong><br>"
+                    f"Expliquez avec vos propres mots pourquoi <em>{kw1}</em> présente à la fois "
+                    f"des avantages et des inconvénients. "
+                    f"Résumez les 2 avantages et les 2 inconvénients principaux.<br><br>"
+                    f"<strong>Bloom 3 — Appliquer :</strong><br>"
+                    f"Dans une situation concrète de votre choix, montrez comment vous utiliseriez "
+                    f"<em>{kw1}</em> en tenant compte de ses limites. "
+                    f"Quelles précautions prendriez-vous pour minimiser les inconvénients ?"
+                ),
+            }
+
+            BLOOM_MOYEN.update({
+                'classification': (
+                    "Compréhension et application des classifications — Bloom (niveaux 2-3)",
+                    f"<strong>Bloom 2 — Comprendre :</strong><br>"
+                    f"Expliquez avec vos propres mots la logique de la classification de <em>{kw1}</em>. "
+                    f"Pourquoi ces catégories ont-elles été définies ainsi ? Qu'est-ce qui les distingue ?<br><br>"
+                    f"<strong>Bloom 3 — Appliquer :</strong><br>"
+                    f"Prenez 3 exemples concrets de votre choix et classez-les en utilisant "
+                    f"la classification étudiée pour <em>{kw1}</em>. Justifiez chaque classement."
+                ),
+                'condition': (
+                    "Compréhension et application des conditions — Bloom (niveaux 2-3)",
+                    f"<strong>Bloom 2 — Comprendre :</strong><br>"
+                    f"Expliquez pourquoi chaque condition pour <em>{kw1}</em> est nécessaire. "
+                    f"Que se passe-t-il concrètement si l'une d'elles n'est pas respectée ?<br><br>"
+                    f"<strong>Bloom 3 — Appliquer :</strong><br>"
+                    f"Proposez une situation concrète et vérifiez point par point si toutes les conditions "
+                    f"de <em>{kw1}</em> sont satisfaites. Concluez si la situation est valide ou non."
+                ),
+                'acteur': (
+                    "Compréhension des auteurs et acteurs — Bloom (niveaux 2-3)",
+                    f"<strong>Bloom 2 — Comprendre :</strong><br>"
+                    f"Expliquez avec vos propres mots la contribution de <em>{kw1}</em> au domaine étudié. "
+                    f"Pourquoi son apport est-il considéré comme important ?<br><br>"
+                    f"<strong>Bloom 3 — Appliquer :</strong><br>"
+                    f"Situez <em>{kw1}</em> dans son contexte : époque, domaine, problème qu'il cherchait à résoudre. "
+                    f"Montrez comment sa découverte ou contribution s'applique encore aujourd'hui."
+                ),
+                'formule': (
+                    "Compréhension et application des formules — Bloom (niveaux 2-3)",
+                    f"<strong>Bloom 2 — Comprendre :</strong><br>"
+                    f"Expliquez chaque terme de la formule ou du théorème de <em>{kw1}</em>. "
+                    f"Que représente chaque variable ou symbole ? Dans quelles unités ?<br><br>"
+                    f"<strong>Bloom 3 — Appliquer :</strong><br>"
+                    f"Appliquez la formule de <em>{kw1}</em> à un exemple numérique concret de votre choix. "
+                    f"Montrez le calcul étape par étape et vérifiez que le résultat est cohérent."
+                ),
+                'chiffre': (
+                    "Compréhension et application des données chiffrées — Bloom (niveaux 2-3)",
+                    f"<strong>Bloom 2 — Comprendre :</strong><br>"
+                    f"Expliquez ce que représente chaque chiffre ou statistique sur <em>{kw1}</em>. "
+                    f"Qu'est-ce que ces données nous apprennent sur la réalité du domaine étudié ?<br><br>"
+                    f"<strong>Bloom 3 — Appliquer :</strong><br>"
+                    f"Utilisez ces données pour tirer une conclusion pratique ou prendre une décision. "
+                    f"Décrivez une situation où ces chiffres guideraient concrètement votre action."
+                ),
+                'localisation': (
+                    "Compréhension et application de la localisation — Bloom (niveaux 2-3)",
+                    f"<strong>Bloom 2 — Comprendre :</strong><br>"
+                    f"Expliquez pourquoi la localisation de <em>{kw1}</em> est significative. "
+                    f"En quoi cet emplacement influence-t-il ses propriétés ou son rôle ?<br><br>"
+                    f"<strong>Bloom 3 — Appliquer :</strong><br>"
+                    f"Utilisez la localisation de <em>{kw1}</em> pour expliquer une de ses caractéristiques concrètes. "
+                    f"Donnez un exemple où la position géographique ou structurelle joue un rôle déterminant."
+                ),
+                'composition': (
+                    "Compréhension et application de la composition — Bloom (niveaux 2-3)",
+                    f"<strong>Bloom 2 — Comprendre :</strong><br>"
+                    f"Expliquez le rôle de chaque composant de <em>{kw1}</em>. "
+                    f"Pourquoi chaque élément est-il nécessaire ? Que se passe-t-il s'il manque ?<br><br>"
+                    f"<strong>Bloom 3 — Appliquer :</strong><br>"
+                    f"Reconstituez de mémoire la structure complète de <em>{kw1}</em> sous forme de liste ou de schéma. "
+                    f"Vérifiez ensuite que vous n'avez oublié aucun composant."
+                ),
+                'synonyme': (
+                    "Compréhension et utilisation des synonymes — Bloom (niveaux 2-3)",
+                    f"<strong>Bloom 2 — Comprendre :</strong><br>"
+                    f"Expliquez les nuances entre <em>{kw1}</em> et ses synonymes vus en cours. "
+                    f"Dans quels contextes précis chaque terme est-il préférable ?<br><br>"
+                    f"<strong>Bloom 3 — Appliquer :</strong><br>"
+                    f"Rédigez 2 phrases distinctes qui utilisent chacun des synonymes de façon appropriée. "
+                    f"Montrez que vous maîtrisez leurs différences d'usage."
+                ),
+                'exception': (
+                    "Compréhension et application des exceptions — Bloom (niveaux 2-3)",
+                    f"<strong>Bloom 2 — Comprendre :</strong><br>"
+                    f"Expliquez pourquoi l'exception concernant <em>{kw1}</em> existe. "
+                    f"Quel principe ou quelle règle générale cette exception vient-elle modifier ?<br><br>"
+                    f"<strong>Bloom 3 — Appliquer :</strong><br>"
+                    f"Proposez un cas concret et déterminez s'il constitue une exception ou non. "
+                    f"Justifiez votre réponse en vous appuyant sur la règle et l'exception étudiées."
+                ),
+                'objectif': (
+                    "Compréhension et application des objectifs — Bloom (niveaux 2-3)",
+                    f"<strong>Bloom 2 — Comprendre :</strong><br>"
+                    f"Expliquez avec vos propres mots comment l'objectif de <em>{kw1}</em> "
+                    f"se traduit en actions concrètes. Pourquoi cet objectif est-il important ?<br><br>"
+                    f"<strong>Bloom 3 — Appliquer :</strong><br>"
+                    f"Appliquez cet objectif à une situation réelle ou un projet de votre choix. "
+                    f"Décrivez les étapes que vous suivriez pour l'atteindre concrètement."
+                ),
+                'structure': (
+                    "Compréhension et application de la syntaxe — Bloom (niveaux 2-3)",
+                    f"<strong>Bloom 2 — Comprendre :</strong><br>"
+                    f"Expliquez le rôle de chaque élément de la syntaxe de <em>{kw1}</em>. "
+                    f"Pourquoi chaque partie est-elle obligatoire ? Que signifie chaque mot-clé ?<br><br>"
+                    f"<strong>Bloom 3 — Appliquer :</strong><br>"
+                    f"Écrivez un exemple complet et correct utilisant la syntaxe de <em>{kw1}</em>. "
+                    f"Choisissez un cas concret différent de celui du cours."
+                ),
+                'abreviation': (
+                    "Compréhension et usage des acronymes — Bloom (niveaux 2-3)",
+                    f"<strong>Bloom 2 — Comprendre :</strong><br>"
+                    f"Développez l'acronyme <em>{kw1}</em> et expliquez ce que chaque mot signifie. "
+                    f"Dans quel domaine et dans quel contexte cet acronyme est-il utilisé ?<br><br>"
+                    f"<strong>Bloom 3 — Appliquer :</strong><br>"
+                    f"Rédigez une phrase ou un court paragraphe professionnel qui utilise correctement "
+                    f"<em>{kw1}</em>. Montrez que vous maîtrisez son contexte d'emploi."
+                ),
+                'tableau': (
+                    "Compréhension et application des formats — Bloom (niveaux 2-3)",
+                    f"<strong>Bloom 2 — Comprendre :</strong><br>"
+                    f"Expliquez pourquoi le format <em>{kw1}</em> correspond à son type de donnée. "
+                    f"Quelle est la logique derrière cette correspondance ?<br><br>"
+                    f"<strong>Bloom 3 — Appliquer :</strong><br>"
+                    f"Écrivez une instruction <code>printf</code> ou <code>scanf</code> complète "
+                    f"qui utilise correctement le format <em>{kw1}</em> avec une variable bien typée. "
+                    f"Testez mentalement ce que le programme afficherait."
+                ),
+                'remarque': (
+                    "Compréhension et application des notes importantes — Bloom (niveaux 2-3)",
+                    f"<strong>Bloom 2 — Comprendre :</strong><br>"
+                    f"Expliquez avec vos propres mots pourquoi la remarque sur <em>{kw1}</em> est importante. "
+                    f"Que risque-t-on si on l'ignore ?<br><br>"
+                    f"<strong>Bloom 3 — Appliquer :</strong><br>"
+                    f"Montrez un cas concret où ne pas tenir compte de cette remarque causerait un problème. "
+                    f"Décrivez précisément ce qui se passerait et comment l'éviter."
+                ),
+                'traduction': (
+                    "Compréhension et traduction algo↔code — Bloom (niveaux 2-3)",
+                    f"<strong>Bloom 2 — Comprendre :</strong><br>"
+                    f"Expliquez la correspondance entre l'instruction algorithmique et son équivalent en code pour <em>{kw1}</em>. "
+                    f"Pourquoi cette correspondance est-elle logique ?<br><br>"
+                    f"<strong>Bloom 3 — Appliquer :</strong><br>"
+                    f"Traduisez un algorithme simple de 5 à 8 lignes dans les deux sens : "
+                    f"d'abord de l'algo vers le code, puis du code vers l'algo. "
+                    f"Vérifiez que les deux versions sont équivalentes."
+                ),
+            })
+
+            if pat_type in BLOOM_MOYEN:
+                bloom_title, bloom_body = BLOOM_MOYEN[pat_type]
+                return ExerciseOutput(
+                    level='moyen',
+                    title=f"{bloom_title} — {prefix}{sec.title}",
+                    body=bloom_body + f"<br><br><em>Répondez par des phrases complètes, sans regarder vos notes.</em>",
+                    code=None
+                )
+
+            # ── Fallback trous (ne devrait plus être atteint pour 1-25) ──
             trous_items = []
             for i, d in enumerate(pat_data[:5]):
                 trou = _make_pattern_trous(d['sentence'], d['keyword'], pat_type, d)
@@ -2255,19 +2523,359 @@ def _make_exercise(sec, level, is_pour, is_tantque, is_if, is_algo, is_py, prefi
     # ═══════════════════════════════════════
 
     if pat_type and pat_data:
-        keywords_list = [d['keyword'] for d in pat_data[:6]]
-        items_html = '<br>'.join([f"{i+1}. <strong>{kw}</strong>" for i, kw in enumerate(keywords_list)])
+        keywords_list = [d['keyword'] for d in pat_data[:3]]
+        kw1 = keywords_list[0] if len(keywords_list) > 0 else sec.title
+        kw2 = keywords_list[1] if len(keywords_list) > 1 else kw1
 
+        # ── Bloom 4-5-6 pour les patterns textuels classiques 1-10 ──
+        BLOOM_DIFF = {
+            'definition': (
+                "Analyse, évaluation et création — Taxonomie de Bloom (niveaux 4-5-6)",
+                f"<strong>Bloom 4 — Analyser :</strong><br>"
+                f"Comparez les notions <em>{kw1}</em> et <em>{kw2}</em> détectées dans ce cours. "
+                f"Identifiez leurs points communs, leurs différences et le contexte propre à chacune.<br><br>"
+                f"<strong>Bloom 5 — Évaluer :</strong><br>"
+                f"Parmi les définitions de ce cours, laquelle vous semble la plus fondamentale ? "
+                f"Justifiez votre choix en vous appuyant sur le contenu étudié. "
+                f"Dans quel contexte cette définition pourrait-elle être insuffisante ou incomplète ?<br><br>"
+                f"<strong>Bloom 6 — Créer :</strong><br>"
+                f"Rédigez avec vos propres mots une définition originale de <em>{kw1}</em>. "
+                f"Inventez ensuite un exemple concret — que vous n'avez pas vu en cours — qui illustre parfaitement ce concept."
+            ),
+            'cause': (
+                "Analyse des causes — Taxonomie de Bloom (niveaux 4-5-6)",
+                f"<strong>Bloom 4 — Analyser :</strong><br>"
+                f"Décomposez les causes de <em>{kw1}</em> en <strong>causes directes</strong> (immédiates) "
+                f"et <strong>causes indirectes</strong> (profondes). Construisez un schéma cause → effet.<br><br>"
+                f"<strong>Bloom 5 — Évaluer :</strong><br>"
+                f"Parmi toutes les causes identifiées, laquelle vous semble la plus déterminante ? "
+                f"Justifiez votre choix avec des arguments tirés du cours. "
+                f"Y a-t-il une cause que vous jugez sous-estimée ?<br><br>"
+                f"<strong>Bloom 6 — Créer :</strong><br>"
+                f"Imaginez un scénario hypothétique dans lequel <em>{kw1}</em> aurait des causes totalement différentes. "
+                f"Quelles nouvelles causes proposeriez-vous et pourquoi seraient-elles plausibles ?"
+            ),
+            'consequence': (
+                "Analyse des conséquences — Taxonomie de Bloom (niveaux 4-5-6)",
+                f"<strong>Bloom 4 — Analyser :</strong><br>"
+                f"Distinguez les conséquences de <em>{kw1}</em> selon leur nature : "
+                f"<strong>court terme</strong> vs <strong>long terme</strong>, "
+                f"<strong>positives</strong> vs <strong>négatives</strong>. "
+                f"Présentez-les sous forme de tableau.<br><br>"
+                f"<strong>Bloom 5 — Évaluer :</strong><br>"
+                f"Parmi les conséquences identifiées, laquelle considérez-vous comme la plus grave ou la plus importante ? "
+                f"Argumentez votre position en vous appuyant sur le cours.<br><br>"
+                f"<strong>Bloom 6 — Créer :</strong><br>"
+                f"Imaginez un scénario alternatif : si <em>{kw1}</em> n'avait pas eu lieu ou n'existait pas, "
+                f"quelles en seraient les conséquences sur le domaine étudié ? "
+                f"Développez votre raisonnement en 5 à 8 lignes."
+            ),
+            'etape': (
+                "Analyse du processus — Taxonomie de Bloom (niveaux 4-5-6)",
+                f"<strong>Bloom 4 — Analyser :</strong><br>"
+                f"Analysez pourquoi l'ordre des étapes de <em>{kw1}</em> est important. "
+                f"Que se passerait-il concrètement si on inversait deux étapes clés ? "
+                f"Identifiez l'étape qui crée une dépendance avec les suivantes.<br><br>"
+                f"<strong>Bloom 5 — Évaluer :</strong><br>"
+                f"Quelle étape de <em>{kw1}</em> vous semble la plus critique, c'est-à-dire celle dont l'échec "
+                f"compromet tout le processus ? Justifiez avec des arguments précis.<br><br>"
+                f"<strong>Bloom 6 — Créer :</strong><br>"
+                f"Concevez une variante améliorée du processus <em>{kw1}</em> : "
+                f"ajoutez une étape de vérification, fusionnez deux étapes redondantes ou réorganisez l'ordre. "
+                f"Expliquez votre démarche et ce que votre variante apporte."
+            ),
+            'caracteristique': (
+                "Analyse des caractéristiques — Taxonomie de Bloom (niveaux 4-5-6)",
+                f"<strong>Bloom 4 — Analyser :</strong><br>"
+                f"Parmi les caractéristiques de <em>{kw1}</em>, classez-les en deux groupes : "
+                f"<strong>caractéristiques essentielles</strong> (sans lesquelles {kw1} ne serait plus {kw1}) "
+                f"et <strong>caractéristiques accessoires</strong> (qui peuvent varier). Justifiez chaque choix.<br><br>"
+                f"<strong>Bloom 5 — Évaluer :</strong><br>"
+                f"Quelle caractéristique de <em>{kw1}</em> est la plus distinctive, c'est-à-dire celle qui le différencie "
+                f"le mieux d'un concept voisin ? Comparez avec un autre élément du cours.<br><br>"
+                f"<strong>Bloom 6 — Créer :</strong><br>"
+                f"Inventez un nouveau concept ou objet qui partage <strong>certaines</strong> caractéristiques de <em>{kw1}</em> "
+                f"mais pas toutes. Nommez-le, décrivez-le et expliquez en quoi il diffère."
+            ),
+            'fonction': (
+                "Analyse des fonctions et rôles — Taxonomie de Bloom (niveaux 4-5-6)",
+                f"<strong>Bloom 4 — Analyser :</strong><br>"
+                f"Analysez en quoi les fonctions de <em>{kw1}</em> sont interdépendantes. "
+                f"Si l'une d'elles disparaissait, quelles fonctions seraient affectées et pourquoi ?<br><br>"
+                f"<strong>Bloom 5 — Évaluer :</strong><br>"
+                f"<em>{kw1}</em> remplit-il vraiment bien sa fonction dans le contexte de ce cours ? "
+                f"Y a-t-il des situations où son rôle serait insuffisant ou inadapté ? "
+                f"Justifiez avec des exemples concrets.<br><br>"
+                f"<strong>Bloom 6 — Créer :</strong><br>"
+                f"Proposez un usage alternatif de <em>{kw1}</em> dans un contexte différent de celui du cours. "
+                f"Décrivez ce nouveau contexte, la fonction que <em>{kw1}</em> y remplirait "
+                f"et les avantages de cet usage."
+            ),
+            'exemple': (
+                "Analyse et production d'exemples — Taxonomie de Bloom (niveaux 4-5-6)",
+                f"<strong>Bloom 4 — Analyser :</strong><br>"
+                f"Analysez les exemples de <em>{kw1}</em> donnés dans le cours. "
+                f"Qu'ont-ils en commun ? En quoi diffèrent-ils ? "
+                f"Identifiez le principe général qu'ils illustrent tous.<br><br>"
+                f"<strong>Bloom 5 — Évaluer :</strong><br>"
+                f"Les exemples du cours sont-ils suffisamment représentatifs de <em>{kw1}</em> ? "
+                f"Proposez un <strong>contre-exemple</strong> — un cas qui ressemble à {kw1} "
+                f"mais qui n'en est pas un — et expliquez la différence.<br><br>"
+                f"<strong>Bloom 6 — Créer :</strong><br>"
+                f"Inventez <strong>3 exemples originaux</strong> de <em>{kw1}</em> que vous n'avez pas vus en cours. "
+                f"Pour chacun, expliquez brièvement pourquoi il constitue un bon exemple du concept."
+            ),
+            'date': (
+                "Analyse historique — Taxonomie de Bloom (niveaux 4-5-6)",
+                f"<strong>Bloom 4 — Analyser :</strong><br>"
+                f"Analysez le contexte dans lequel <em>{kw1}</em> s'est produit. "
+                f"Quels facteurs (politiques, scientifiques, économiques, sociaux) ont rendu cet événement possible "
+                f"à ce moment précis ?<br><br>"
+                f"<strong>Bloom 5 — Évaluer :</strong><br>"
+                f"Évaluez l'importance de <em>{kw1}</em> dans le domaine étudié. "
+                f"Aurait-il pu se produire à une autre époque ? "
+                f"Les conditions auraient-elles été différentes ? Argumentez.<br><br>"
+                f"<strong>Bloom 6 — Créer :</strong><br>"
+                f"Imaginez comment les événements auraient évolué si <em>{kw1}</em> ne s'était pas produit "
+                f"ou s'était produit 20 ans plus tôt. "
+                f"Rédigez un scénario alternatif en 5 à 8 lignes."
+            ),
+            'avantage': (
+                "Analyse critique avantages/inconvénients — Taxonomie de Bloom (niveaux 4-5-6)",
+                f"<strong>Bloom 4 — Analyser :</strong><br>"
+                f"Classez les avantages et les inconvénients de <em>{kw1}</em> par ordre d'importance décroissante. "
+                f"Justifiez brièvement chaque rang attribué.<br><br>"
+                f"<strong>Bloom 5 — Évaluer :</strong><br>"
+                f"Dans quel contexte précis les inconvénients de <em>{kw1}</em> l'emportent-ils sur ses avantages ? "
+                f"Et inversement ? Argumentez votre position avec des exemples tirés du cours ou de la réalité.<br><br>"
+                f"<strong>Bloom 6 — Créer :</strong><br>"
+                f"Proposez une <strong>amélioration concrète</strong> de <em>{kw1}</em> qui vise à réduire "
+                f"son principal inconvénient tout en conservant ses avantages essentiels. "
+                f"Décrivez votre proposition et évaluez sa faisabilité."
+            ),
+            # ── Patterns 11-25 ──
+            'classification': (
+                "Analyse des classifications — Bloom (niveaux 4-5-6)",
+                f"<strong>Bloom 4 — Analyser :</strong><br>"
+                f"Analysez la classification de <em>{kw1}</em> : les catégories se chevauchent-elles ? "
+                f"Certains cas sont-ils difficiles à classer ? Identifiez les zones d'ambiguïté.<br><br>"
+                f"<strong>Bloom 5 — Évaluer :</strong><br>"
+                f"Cette classification est-elle la meilleure possible pour <em>{kw1}</em> ? "
+                f"Quels critères auraient pu être choisis différemment ? Justifiez votre position.<br><br>"
+                f"<strong>Bloom 6 — Créer :</strong><br>"
+                f"Proposez une classification alternative de <em>{kw1}</em> basée sur un critère différent. "
+                f"Nommez vos nouvelles catégories, définissez-les et donnez un exemple pour chacune."
+            ),
+            'condition': (
+                "Analyse des conditions et critères — Bloom (niveaux 4-5-6)",
+                f"<strong>Bloom 4 — Analyser :</strong><br>"
+                f"Analysez les dépendances entre les conditions pour <em>{kw1}</em>. "
+                f"Certaines conditions en impliquent-elles d'autres automatiquement ? "
+                f"Laquelle est la condition-mère dont les autres découlent ?<br><br>"
+                f"<strong>Bloom 5 — Évaluer :</strong><br>"
+                f"Quelle condition pour <em>{kw1}</em> vous semble la plus critique — c'est-à-dire "
+                f"celle dont la violation est la plus grave ? Justifiez et proposez une règle de vérification.<br><br>"
+                f"<strong>Bloom 6 — Créer :</strong><br>"
+                f"Imaginez un cas limite où toutes les conditions de <em>{kw1}</em> sont à peine remplies. "
+                f"Décrivez ce cas, montrez qu'il est valide, puis proposez une condition supplémentaire "
+                f"qui renforcerait la robustesse du système."
+            ),
+            'acteur': (
+                "Analyse des contributions — Bloom (niveaux 4-5-6)",
+                f"<strong>Bloom 4 — Analyser :</strong><br>"
+                f"Analysez l'influence de <em>{kw1}</em> sur le domaine étudié. "
+                f"Sur quelles idées préexistantes s'est-il appuyé ? Qu'a-t-il apporté de nouveau ?<br><br>"
+                f"<strong>Bloom 5 — Évaluer :</strong><br>"
+                f"Évaluez l'importance relative de la contribution de <em>{kw1}</em> par rapport "
+                f"aux autres acteurs du domaine. Sa contribution est-elle surestimée ou sous-estimée ? "
+                f"Argumentez avec des faits.<br><br>"
+                f"<strong>Bloom 6 — Créer :</strong><br>"
+                f"Imaginez comment le domaine aurait évolué sans la contribution de <em>{kw1}</em>. "
+                f"Rédigez un court scénario alternatif (5 à 8 lignes) et identifiez ce qui manquerait."
+            ),
+            'formule': (
+                "Analyse et maîtrise des formules — Bloom (niveaux 4-5-6)",
+                f"<strong>Bloom 4 — Analyser :</strong><br>"
+                f"Analysez les conditions d'application et les limites de la formule de <em>{kw1}</em>. "
+                f"Dans quels cas cette formule ne s'applique-t-elle pas ? "
+                f"Quelles hypothèses sous-jacentes doit-on respecter ?<br><br>"
+                f"<strong>Bloom 5 — Évaluer :</strong><br>"
+                f"Évaluez la portée du théorème ou de la formule de <em>{kw1}</em>. "
+                f"Est-elle générale ou spécifique à un domaine ? "
+                f"Existe-t-il des formules concurrentes ? Laquelle préféreriez-vous et pourquoi ?<br><br>"
+                f"<strong>Bloom 6 — Créer :</strong><br>"
+                f"Créez un problème original — différent des exemples du cours — qui nécessite "
+                f"l'application de la formule de <em>{kw1}</em>. "
+                f"Rédigez l'énoncé, résolvez-le et vérifiez votre résultat."
+            ),
+            'chiffre': (
+                "Analyse critique des données — Bloom (niveaux 4-5-6)",
+                f"<strong>Bloom 4 — Analyser :</strong><br>"
+                f"Analysez les tendances et les corrélations entre les données chiffrées sur <em>{kw1}</em>. "
+                f"Que révèlent ces chiffres sur l'évolution du domaine ? "
+                f"Y a-t-il des anomalies ou des ruptures à expliquer ?<br><br>"
+                f"<strong>Bloom 5 — Évaluer :</strong><br>"
+                f"Ces données sont-elles fiables et représentatives ? "
+                f"Quelles pourraient être leurs limites méthodologiques ? "
+                f"Comment les interpréter avec prudence ?<br><br>"
+                f"<strong>Bloom 6 — Créer :</strong><br>"
+                f"Proposez une représentation visuelle (tableau, graphique décrit) "
+                f"qui illustrerait ces données de façon plus parlante. "
+                f"Rédigez 3 conclusions opérationnelles que l'on peut tirer de ces chiffres."
+            ),
+            'localisation': (
+                "Analyse de la localisation — Bloom (niveaux 4-5-6)",
+                f"<strong>Bloom 4 — Analyser :</strong><br>"
+                f"Analysez comment la localisation de <em>{kw1}</em> influence directement "
+                f"ses propriétés, son comportement ou son rôle dans le système étudié. "
+                f"Identifiez les relations de cause à effet liées à cet emplacement.<br><br>"
+                f"<strong>Bloom 5 — Évaluer :</strong><br>"
+                f"Cet emplacement est-il optimal pour <em>{kw1}</em> ? "
+                f"Quels avantages et inconvénients présente-t-il par rapport à d'autres positions possibles ?<br><br>"
+                f"<strong>Bloom 6 — Créer :</strong><br>"
+                f"Proposez un scénario où la localisation de <em>{kw1}</em> changerait. "
+                f"Décrivez les conséquences sur le système et évaluez si ce changement serait bénéfique."
+            ),
+            'composition': (
+                "Analyse de la structure et composition — Bloom (niveaux 4-5-6)",
+                f"<strong>Bloom 4 — Analyser :</strong><br>"
+                f"Analysez les interactions entre les composants de <em>{kw1}</em>. "
+                f"Lesquels sont interdépendants ? Lequel est central et lequel est périphérique ?<br><br>"
+                f"<strong>Bloom 5 — Évaluer :</strong><br>"
+                f"La structure de <em>{kw1}</em> est-elle optimale ? "
+                f"Y a-t-il un composant redondant ou un manquant ? "
+                f"Justifiez votre évaluation avec des arguments précis.<br><br>"
+                f"<strong>Bloom 6 — Créer :</strong><br>"
+                f"Concevez une structure alternative de <em>{kw1}</em> : "
+                f"ajoutez, supprimez ou réorganisez des composants. "
+                f"Expliquez ce que votre version apporte et ce qu'elle sacrifie."
+            ),
+            'synonyme': (
+                "Analyse des synonymes et nuances — Bloom (niveaux 4-5-6)",
+                f"<strong>Bloom 4 — Analyser :</strong><br>"
+                f"Analysez dans quels contextes précis chaque synonyme de <em>{kw1}</em> est préférable. "
+                f"Quelles nuances de sens, de registre ou d'usage les distinguent ?<br><br>"
+                f"<strong>Bloom 5 — Évaluer :</strong><br>"
+                f"Ces synonymes sont-ils vraiment interchangeables dans tous les cas ? "
+                f"Identifiez un contexte où utiliser le mauvais synonyme causerait une incompréhension. "
+                f"Argumentez.<br><br>"
+                f"<strong>Bloom 6 — Créer :</strong><br>"
+                f"Rédigez un court texte de 6 à 8 lignes sur le sujet du cours "
+                f"en utilisant tous les synonymes de <em>{kw1}</em> de façon appropriée et naturelle."
+            ),
+            'exception': (
+                "Analyse des exceptions — Bloom (niveaux 4-5-6)",
+                f"<strong>Bloom 4 — Analyser :</strong><br>"
+                f"Analysez ce que l'exception concernant <em>{kw1}</em> révèle sur la règle générale. "
+                f"L'exception prouve-t-elle la règle ou en montre-t-elle les limites ? "
+                f"Quel principe sous-jacent cette exception met-elle en évidence ?<br><br>"
+                f"<strong>Bloom 5 — Évaluer :</strong><br>"
+                f"Cette exception devrait-elle être intégrée à la règle générale ou rester un cas à part ? "
+                f"Argumentez votre position et anticipez les contre-arguments.<br><br>"
+                f"<strong>Bloom 6 — Créer :</strong><br>"
+                f"Identifiez 2 autres cas limites qui pourraient potentiellement constituer "
+                f"des exceptions supplémentaires à la règle de <em>{kw1}</em>. "
+                f"Justifiez pourquoi ils méritent un traitement particulier."
+            ),
+            'objectif': (
+                "Analyse des objectifs et finalités — Bloom (niveaux 4-5-6)",
+                f"<strong>Bloom 4 — Analyser :</strong><br>"
+                f"Analysez si les objectifs de <em>{kw1}</em> sont cohérents entre eux. "
+                f"Y a-t-il des tensions ou des contradictions ? "
+                f"Certains objectifs sont-ils subordonnés à d'autres ?<br><br>"
+                f"<strong>Bloom 5 — Évaluer :</strong><br>"
+                f"Ces objectifs sont-ils réalistes et mesurables ? "
+                f"Proposez des indicateurs concrets qui permettraient de vérifier "
+                f"si chaque objectif est atteint.<br><br>"
+                f"<strong>Bloom 6 — Créer :</strong><br>"
+                f"Reformulez les objectifs de <em>{kw1}</em> de façon plus opérationnelle "
+                f"en utilisant des verbes d'action précis (mesurer, produire, réduire…). "
+                f"Ajoutez un objectif complémentaire que vous jugez nécessaire."
+            ),
+            'structure': (
+                "Analyse et maîtrise de la syntaxe — Bloom (niveaux 4-5-6)",
+                f"<strong>Bloom 4 — Analyser :</strong><br>"
+                f"Analysez les erreurs de syntaxe courantes sur <em>{kw1}</em> et leurs causes. "
+                f"Pourquoi ces erreurs sont-elles fréquentes ? "
+                f"Quel élément de la syntaxe est le plus souvent mal compris ?<br><br>"
+                f"<strong>Bloom 5 — Évaluer :</strong><br>"
+                f"Cette syntaxe est-elle intuitive ? "
+                f"En quoi pourrait-elle être améliorée pour être plus lisible ou plus facile à mémoriser ? "
+                f"Comparez avec une syntaxe équivalente dans un autre langage.<br><br>"
+                f"<strong>Bloom 6 — Créer :</strong><br>"
+                f"Créez un programme original de 10 à 15 lignes qui utilise correctement "
+                f"la syntaxe de <em>{kw1}</em> dans un contexte différent de tous les exemples du cours."
+            ),
+            'abreviation': (
+                "Analyse des acronymes et abréviations — Bloom (niveaux 4-5-6)",
+                f"<strong>Bloom 4 — Analyser :</strong><br>"
+                f"Analysez pourquoi l'acronyme <em>{kw1}</em> s'est imposé dans le domaine. "
+                f"Quels avantages offre-t-il par rapport au nom complet ? "
+                f"Y a-t-il des risques de confusion avec d'autres acronymes ?<br><br>"
+                f"<strong>Bloom 5 — Évaluer :</strong><br>"
+                f"Cet acronyme est-il suffisamment clair et sans ambiguïté ? "
+                f"Dans quels contextes pourrait-il prêter à confusion ? "
+                f"Proposez une clarification ou une convention d'usage.<br><br>"
+                f"<strong>Bloom 6 — Créer :</strong><br>"
+                f"Rédigez une fiche glossaire structurée pour <em>{kw1}</em> et les autres acronymes du cours : "
+                f"acronyme, développement, définition courte, exemple d'usage."
+            ),
+            'tableau': (
+                "Analyse des formats et correspondances — Bloom (niveaux 4-5-6)",
+                f"<strong>Bloom 4 — Analyser :</strong><br>"
+                f"Analysez les erreurs courantes liées à l'utilisation du format <em>{kw1}</em>. "
+                f"Pourquoi un mauvais format peut-il causer un comportement inattendu ou une erreur ?<br><br>"
+                f"<strong>Bloom 5 — Évaluer :</strong><br>"
+                f"Quels sont les risques (dépassement, troncature, erreur d'affichage) "
+                f"liés à un mauvais choix de format pour <em>{kw1}</em> ? "
+                f"Comment les prévenir dans un programme robuste ?<br><br>"
+                f"<strong>Bloom 6 — Créer :</strong><br>"
+                f"Créez un programme complet qui lit et affiche plusieurs types de données différents, "
+                f"en utilisant correctement tous les formats étudiés. "
+                f"Commentez chaque choix de format."
+            ),
+            'remarque': (
+                "Analyse des règles et notes importantes — Bloom (niveaux 4-5-6)",
+                f"<strong>Bloom 4 — Analyser :</strong><br>"
+                f"Analysez pourquoi la remarque sur <em>{kw1}</em> mérite une attention particulière. "
+                f"Dans quels cas précis s'applique-t-elle ? "
+                f"Y a-t-il des situations où elle ne s'applique pas ?<br><br>"
+                f"<strong>Bloom 5 — Évaluer :</strong><br>"
+                f"Cette remarque devrait-elle être élevée au rang de règle générale ? "
+                f"Justifiez votre position. Quelles seraient les conséquences si elle était systématiquement ignorée ?<br><br>"
+                f"<strong>Bloom 6 — Créer :</strong><br>"
+                f"Créez un exemple complet qui illustre parfaitement l'importance de cette remarque. "
+                f"Montrez d'abord le cas sans la remarque (comportement incorrect), "
+                f"puis le cas en la respectant (comportement correct)."
+            ),
+            'traduction': (
+                "Analyse et maîtrise des traductions algo↔code — Bloom (niveaux 4-5-6)",
+                f"<strong>Bloom 4 — Analyser :</strong><br>"
+                f"Analysez les différences de logique entre l'écriture algorithmique et le code "
+                f"pour <em>{kw1}</em>. "
+                f"Qu'est-ce que l'algo exprime que le code cache ? Et inversement ?<br><br>"
+                f"<strong>Bloom 5 — Évaluer :</strong><br>"
+                f"Pour un développeur débutant, quelle représentation est la plus pédagogique : "
+                f"l'algorithmique ou le code ? Argumentez avec des exemples concrets tirés du cours.<br><br>"
+                f"<strong>Bloom 6 — Créer :</strong><br>"
+                f"Concevez un algorithme original résolvant un problème de votre choix, "
+                f"écrivez-le en pseudo-code algorithmique, puis traduisez-le en code "
+                f"dans le langage du cours. Vérifiez que les deux versions sont équivalentes."
+            ),
+        }
+
+        if pat_type in BLOOM_DIFF:
+            bloom_title, bloom_body = BLOOM_DIFF[pat_type]
+            return ExerciseOutput(
+                level='difficile',
+                title=f"{bloom_title} — {prefix}{sec.title}",
+                body=bloom_body + f"<br><br><em>Rédigez des réponses complètes et argumentées.</em>",
+                code=None
+            )
+
+        # ── Patterns 11-25 : structure existante maintenue ──
+        items_html = '<br>'.join([f"{i+1}. <strong>{kw}</strong>" for i, kw in enumerate(keywords_list)])
         type_titles = {
-            'definition': 'Rédaction de définitions',
-            'cause': 'Analyse des causes',
-            'consequence': 'Analyse des conséquences',
-            'etape': 'Restitution des étapes',
-            'caracteristique': 'Description des caractéristiques',
-            'fonction': 'Explication des fonctions',
-            'exemple': 'Production d\'exemples',
-            'date': 'Restitution chronologique',
-            'avantage': 'Argumentation pour/contre',
             'classification': 'Restitution des catégories',
             'condition': 'Explication des conditions',
             'acteur': 'Identification des auteurs',
@@ -2285,15 +2893,6 @@ def _make_exercise(sec, level, is_pour, is_tantque, is_if, is_algo, is_py, prefi
             'structure': 'Production de syntaxe',
         }
         type_consignes = {
-            'definition': 'Rédigez les définitions de mémoire, avec vos propres mots.',
-            'cause': 'Expliquez les causes des phénomènes suivants, de mémoire.',
-            'consequence': 'Décrivez les conséquences des phénomènes suivants, de mémoire.',
-            'etape': 'Décrivez dans l\'ordre les étapes des processus suivants.',
-            'caracteristique': 'Décrivez les caractéristiques des éléments suivants.',
-            'fonction': 'Expliquez le rôle et la fonction de chaque élément.',
-            'exemple': 'Donnez au moins 3 exemples pour chaque concept.',
-            'date': 'Situez chaque événement dans le temps et expliquez son contexte.',
-            'avantage': 'Présentez les avantages ET les inconvénients de chaque sujet.',
             'classification': 'Citez les différentes catégories ou types pour chaque sujet.',
             'condition': 'Décrivez les conditions nécessaires pour chaque point.',
             'acteur': 'Identifiez et décrivez l\'importance de chaque auteur/acteur.',
@@ -2311,15 +2910,6 @@ def _make_exercise(sec, level, is_pour, is_tantque, is_if, is_algo, is_py, prefi
             'structure': 'Donnez la structure ou syntaxe générale de l\'élément suivant.',
         }
         type_verbes = {
-            'definition': 'Définissez chacun des termes suivants :',
-            'cause': 'Citez et expliquez les causes de :',
-            'consequence': 'Citez et expliquez les conséquences de :',
-            'etape': 'Décrivez dans l\'ordre les étapes de :',
-            'caracteristique': 'Décrivez les caractéristiques de :',
-            'fonction': 'Expliquez à quoi sert :',
-            'exemple': 'Donnez des exemples concrets de :',
-            'date': 'Datez et expliquez les événements suivants :',
-            'avantage': 'Argumentez pour et contre :',
             'classification': 'Listez les types de :',
             'condition': 'Quelles sont les conditions pour :',
             'acteur': 'Présentez la contribution de :',
@@ -2336,7 +2926,6 @@ def _make_exercise(sec, level, is_pour, is_tantque, is_if, is_algo, is_py, prefi
             'objectif': 'Quels sont les objectifs de :',
             'structure': 'Quelle est la syntaxe de :'
         }
-
         return ExerciseOutput(
             level='difficile',
             title=f"{type_titles.get(pat_type, 'Production libre')} — {prefix}{sec.title}",

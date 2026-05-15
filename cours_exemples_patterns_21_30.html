@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Exemples de cours — Patterns 21 à 30</title>
+</head>
+<body>
+
+<h1>Exemples de cours à coller dans PédaBot — Patterns 21 à 30</h1>
+<hr>
+
+<h2>Pattern 21 — Structure / Syntaxe</h2>
+<p><b>Marqueurs :</b> se présente comme suit, la syntaxe de, la structure de, s'écrit, se déclare, se formule</p>
+<pre>
+Cours : Syntaxe des Structures de Contrôle en Algorithmique
+
+I. Structure de la boucle POUR
+La syntaxe générale de la boucle POUR se présente comme suit :
+    POUR variable DE valeur_debut À valeur_fin FAIRE
+        instructions
+    FIN POUR
+La structure de la boucle POUR s'écrit avec un compteur obligatoire.
+La variable de boucle se déclare avant le bloc algorithmique.
+
+II. Structure de la condition SI
+La syntaxe de l'alternative SI se formule de la manière suivante :
+    SI condition ALORS
+        instructions_si_vrai
+    SINON
+        instructions_si_faux
+    FIN SI
+La structure de la condition imbriquée s'écrit avec plusieurs SINON SI successifs.
+</pre>
+<hr>
+
+<h2>Pattern 22 — Abréviations / Acronymes</h2>
+<p><b>Marqueurs :</b> ACRONYME (développement entre parenthèses), signifie, est l'abréviation de, est l'acronyme de</p>
+<pre>
+Cours : Vocabulaire des Réseaux Informatiques
+
+I. Acronymes fondamentaux
+TCP (Transmission Control Protocol) est le protocole garantissant la livraison des données.
+IP (Internet Protocol) est l'acronyme du protocole d'adressage de base d'Internet.
+HTTP signifie HyperText Transfer Protocol, le protocole du Web.
+HTTPS (HyperText Transfer Protocol Secure) est la version sécurisée du protocole HTTP.
+DNS est l'abréviation de Domain Name System, le système de résolution de noms.
+
+II. Acronymes matériels
+RAM (Random Access Memory) désigne la mémoire vive à accès aléatoire.
+ROM est l'acronyme de Read Only Memory, la mémoire morte en lecture seule.
+CPU (Central Processing Unit) signifie Unité Centrale de Traitement.
+GPU est l'abréviation de Graphics Processing Unit, le processeur graphique.
+SSD (Solid State Drive) désigne un disque de stockage à semi-conducteurs sans pièces mobiles.
+</pre>
+<hr>
+
+<h2>Pattern 23 — Formats printf / scanf (tableaux C)</h2>
+<p><b>Marqueurs :</b> %d, %f, %s, %c, %lf associés à leur type dans un tableau ou liste</p>
+<pre>
+Cours : Entrées et Sorties en Langage C
+
+I. Les spécificateurs de format
+En langage C, printf et scanf utilisent des spécificateurs de format pour chaque type.
+
+%d  → entier (int)
+%f  → réel simple précision (float)
+%lf → réel double précision (double)
+%c  → caractère unique (char)
+%s  → chaîne de caractères (char[])
+%u  → entier non signé (unsigned int)
+%ld → entier long (long int)
+%e  → notation scientifique (float ou double)
+%o  → entier en octal
+%x  → entier en hexadécimal
+
+II. Exemples d'utilisation
+Pour afficher un entier, on utilise : printf("%d", age);
+Pour lire un réel, on écrit : scanf("%lf", &moyenne);
+Pour afficher une chaîne, on utilise : printf("%s", nom);
+Pour lire un caractère, on écrit : scanf(" %c", &reponse);
+</pre>
+<hr>
+
+<h2>Pattern 24 — Notes / Remarques (NB / Attention)</h2>
+<p><b>Marqueurs :</b> NB, N.B, Remarque, Attention, Important, À noter</p>
+<pre>
+Cours : Les Tableaux en C
+
+I. Déclaration et utilisation
+Un tableau en C se déclare avec : type nom[taille];
+L'accès à un élément se fait par son indice : tableau[i]
+
+NB : En C, les indices d'un tableau commencent à 0 et non à 1.
+Attention : accéder à un indice hors bornes provoque un comportement indéfini.
+Remarque : la taille d'un tableau doit être une constante connue à la compilation en C standard.
+
+II. Initialisation
+Un tableau peut être initialisé à la déclaration : int t[5] = {1, 2, 3, 4, 5};
+Important : un tableau non initialisé contient des valeurs quelconques (garbage values).
+À noter : en C, le nom du tableau est un pointeur constant vers son premier élément.
+NB : il n'existe pas de vérification automatique des bornes en C, contrairement à Java ou Python.
+Attention : ne jamais confondre la taille du tableau et l'indice du dernier élément (taille - 1).
+</pre>
+<hr>
+
+<h2>Pattern 25 — Traductions Algo vers Code</h2>
+<p><b>Marqueurs :</b> ÉCRIRE / AFFICHER ↔ printf / print, LIRE ↔ scanf / input, ← ↔ =, RACINE ↔ sqrt</p>
+<pre>
+Cours : Correspondance Algorithmique et Langage C
+
+I. Traduction des entrées-sorties
+En algorithmique, AFFICHER "Bonjour" correspond à printf("Bonjour\n"); en C.
+L'instruction ÉCRIRE(x) se traduit par printf("%d", x); en C et print(x) en Python.
+LIRE(n) correspond à scanf("%d", &n); en C et n = int(input()) en Python.
+L'instruction SAISIR correspond en code à scanf ou à input selon le langage.
+
+II. Traduction des opérations
+L'affectation ← correspond à l'opérateur = en C et en Python.
+La racine carrée RACINE(x) correspond à sqrt(x) en C (bibliothèque math.h).
+L'opération DIV entier correspond à la division entière // en Python et / entre entiers en C.
+MOD, le reste de la division entière, correspond à l'opérateur % en C, Python et JavaScript.
+L'opérateur puissance se traduit par pow(x,n) en C et par x**n en Python.
+</pre>
+<hr>
+
+<h2>Pattern 26 — Boucle POUR / for</h2>
+<p><b>Marqueurs :</b> POUR variable DE ... À ... FAIRE, FIN POUR, for variable in range(), for(int i=...)</p>
+<pre>
+Cours : La Boucle POUR en Algorithmique
+
+I. Présentation de la boucle POUR
+La boucle POUR est utilisée quand le nombre de répétitions est connu à l'avance.
+Elle utilise un compteur qui s'incrémente automatiquement à chaque itération.
+
+Exemple algorithmique :
+POUR i DE 1 À 10 FAIRE
+    ÉCRIRE(i)
+FIN POUR
+
+II. Traduction en Python
+for i in range(1, 11):
+    print(i)
+
+III. Traduction en JavaScript
+for (let i = 1; i <= 10; i++) {
+    console.log(i);
+}
+
+La boucle POUR est adaptée pour parcourir un tableau, calculer une somme
+ou répéter une action un nombre fixe de fois.
+</pre>
+<hr>
+
+<h2>Pattern 27 — Boucle TANT QUE / while</h2>
+<p><b>Marqueurs :</b> TANT QUE ... FAIRE, FIN TANT QUE, while condition:, while (condition) {</p>
+<pre>
+Cours : La Boucle TANT QUE
+
+I. Principe de la boucle TANT QUE
+La boucle TANT QUE répète des instructions tant qu'une condition reste vraie.
+Elle est utilisée quand le nombre de répétitions n'est pas connu à l'avance.
+
+Exemple algorithmique :
+n ← 1
+TANT QUE n <= 100 FAIRE
+    ÉCRIRE(n)
+    n ← n * 2
+FIN TANT QUE
+
+II. Traduction en Python
+n = 1
+while n <= 100:
+    print(n)
+    n = n * 2
+
+III. Traduction en JavaScript
+let n = 1;
+while (n <= 100) {
+    console.log(n);
+    n = n * 2;
+}
+
+Attention : il faut toujours s'assurer que la condition deviendra fausse pour éviter une boucle infinie.
+</pre>
+<hr>
+
+<h2>Pattern 28 — Boucle RÉPÉTER JUSQU'À / do-while</h2>
+<p><b>Marqueurs :</b> RÉPÉTER, JUSQU'À, do {, } while (</p>
+<pre>
+Cours : La Boucle RÉPÉTER JUSQU'À
+
+I. Principe
+La boucle RÉPÉTER JUSQU'À exécute les instructions au moins une fois avant de tester la condition.
+Elle s'arrête quand la condition d'arrêt devient vraie (à l'inverse du TANT QUE).
+
+Exemple algorithmique (validation de saisie) :
+RÉPÉTER
+    ÉCRIRE("Entrez un nombre positif :")
+    LIRE(n)
+JUSQU'À (n > 0)
+ÉCRIRE("Valeur valide :", n)
+
+II. Traduction en JavaScript (do...while natif)
+let n;
+do {
+    n = parseInt(prompt("Entrez un nombre positif :"));
+} while (n <= 0);
+console.log("Valeur valide :", n);
+
+III. Traduction en Python (simulation avec while True)
+while True:
+    n = int(input("Entrez un nombre positif : "))
+    if n > 0:
+        break
+print("Valeur valide :", n)
+</pre>
+<hr>
+
+<h2>Pattern 29 — Structure SI / SINON / if-else</h2>
+<p><b>Marqueurs :</b> SI ... ALORS, FIN SI, SINON SI, if condition:, elif, if (condition) {, else if (</p>
+<pre>
+Cours : Les Structures Conditionnelles
+
+I. La structure SI / SINON
+La structure SI / SINON permet de choisir entre deux actions selon une condition.
+
+Exemple algorithmique :
+SI note >= 10 ALORS
+    ÉCRIRE("Admis")
+SINON
+    ÉCRIRE("Ajourné")
+FIN SI
+
+II. La structure SI / SINON SI
+SINON SI permet d'enchaîner plusieurs conditions mutuellement exclusives.
+
+SI note >= 16 ALORS
+    ÉCRIRE("Très bien")
+SINON SI note >= 14 ALORS
+    ÉCRIRE("Bien")
+SINON SI note >= 10 ALORS
+    ÉCRIRE("Passable")
+SINON
+    ÉCRIRE("Insuffisant")
+FIN SI
+
+III. Traduction en Python
+if note >= 16:
+    print("Très bien")
+elif note >= 14:
+    print("Bien")
+elif note >= 10:
+    print("Passable")
+else:
+    print("Insuffisant")
+</pre>
+<hr>
+
+<h2>Pattern 30 — Fonction / Procédure</h2>
+<p><b>Marqueurs :</b> FONCTION nom(), PROCÉDURE nom(), RETOURNER, def nom():, function nom() {</p>
+<pre>
+Cours : Les Fonctions et Procédures
+
+I. Déclaration d'une fonction
+Une FONCTION retourne une valeur au programme appelant.
+
+FONCTION Maximum(a : Entier, b : Entier) : Entier
+DÉBUT
+    SI a >= b ALORS
+        RETOURNER a
+    SINON
+        RETOURNER b
+    FIN SI
+FIN
+
+II. Déclaration d'une procédure
+Une PROCÉDURE effectue une action sans retourner de valeur.
+
+PROCÉDURE AfficherBonjour(nom : Chaîne)
+DÉBUT
+    ÉCRIRE("Bonjour,", nom)
+FIN
+
+III. Traduction en Python
+def maximum(a, b):
+    if a >= b:
+        return a
+    else:
+        return b
+
+IV. Traduction en JavaScript
+function maximum(a, b) {
+    return a >= b ? a : b;
+}
+
+NB : En Python, def est le mot-clé de déclaration de toute fonction ou procédure.
+</pre>
+<hr>
+
+<p><b>Fichier précédent :</b> cours_exemples_patterns_11_20.html</p>
+<p><b>Fichier suivant :</b> cours_exemples_patterns_31_40.html — Patterns 31 à 40</p>
+
+</body>
+</html>

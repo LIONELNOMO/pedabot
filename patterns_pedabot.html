@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>PédaBot — Les 40 Patterns de Détection</title>
+</head>
+<body>
+
+<h1>PédaBot — Les 40 Patterns de Détection</h1>
+<p>Liste complète des patterns utilisés par le moteur pour analyser un cours et générer des questions.</p>
+<hr>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>GROUPE 1 — PATTERNS TEXTUELS CLASSIQUES (1 à 25)</h2>
+<!-- ═══════════════════════════════════════════════════ -->
+
+<h3>Pattern 1 — Définitions</h3>
+<p><b>Question générée :</b> Qu'est-ce que [mot-clé] ?</p>
+<p><b>Type A — Mot-clé AVANT le marqueur :</b></p>
+<ul>
+  <li>est un / est une / est le / est la</li>
+  <li>est défini(e) comme</li>
+  <li>est appelé(e)</li>
+  <li>est considéré(e) comme</li>
+  <li>est connu(e) sous le nom de</li>
+  <li>est aussi appelé(e) / connu(e) comme</li>
+  <li>est un type / une forme / une sorte / une catégorie de</li>
+  <li>est également / aussi un(e)</li>
+  <li>est utilisé(e) pour</li>
+  <li>est employé(e) pour</li>
+  <li>représente / désigne / constitue / signifie / caractérise</li>
+  <li>correspond à / consiste à / consiste en</li>
+  <li>se définit comme / se caractérise par / se compose de</li>
+  <li>se traduit par / se distingue par</li>
+  <li>fait référence à / renvoie à / s'apparente à</li>
+  <li>permet de / sert à</li>
+  <li>a pour rôle / but / objectif / fonction / mission</li>
+  <li>vise à / peut être défini(e) comme</li>
+  <li>porte le nom de</li>
+</ul>
+<p><b>Type B — Mot-clé APRÈS le marqueur :</b></p>
+<ul>
+  <li>On appelle / On définit / On nomme / On entend par</li>
+  <li>On désigne par / On note / On parle de</li>
+  <li>On utilise le terme</li>
+  <li>Le terme / La notion de / Le concept de / Le mot</li>
+</ul>
+<p><b>Titres déclencheurs :</b> définitions, concepts, notions, vocabulaire, terminologie, glossaire, rappels, généralités, introduction, pré-requis, présentation</p>
+
+<hr>
+
+<h3>Pattern 2 — Causes / Origines</h3>
+<p><b>Question générée :</b> Quelles sont les causes de [mot-clé] ?</p>
+<ul>
+  <li>a été / est causé(e) par</li>
+  <li>est dû / due à</li>
+  <li>résulte de</li>
+  <li>s'explique par</li>
+  <li>provient de</li>
+  <li>est provoqué(e) par</li>
+  <li>trouve son/ses origine(s) dans</li>
+  <li>est lié(e) à</li>
+  <li>a pour cause / origine / source</li>
+  <li>est engendré(e) / occasionné(e) par</li>
+  <li>découle de</li>
+  <li>tire son/ses origine(s) de</li>
+  <li>en raison de</li>
+</ul>
+<p><b>Titres déclencheurs :</b> causes, origines, facteurs, raisons, sources, pourquoi</p>
+
+<hr>
+
+<h3>Pattern 3 — Conséquences / Effets</h3>
+<p><b>Question générée :</b> Quelles sont les conséquences de [mot-clé] ?</p>
+<ul>
+  <li>entraîne / provoque</li>
+  <li>conduit à / aboutit à / mène à</li>
+  <li>a pour effet / conséquence / résultat / impact</li>
+  <li>engendre / génère / produit / cause / occasionne</li>
+  <li>peut / risque de entraîner / provoquer / causer</li>
+  <li>se traduit par</li>
+  <li>a des effets / impacts / conséquences</li>
+  <li>est à l'origine / responsable de</li>
+</ul>
+<p><b>Titres déclencheurs :</b> conséquences, effets, impacts, résultats, répercussions, implications</p>
+
+<hr>
+
+<h3>Pattern 4 — Étapes / Processus / Phases</h3>
+<p><b>Question générée :</b> Quelles sont les étapes de [mot-clé] ?</p>
+<ul>
+  <li>se déroule en</li>
+  <li>comporte plusieurs / N étapes / phases</li>
+  <li>comprend plusieurs / N étapes / phases</li>
+  <li>se compose de plusieurs / N étapes / phases</li>
+  <li>passe par plusieurs / N étapes / phases</li>
+  <li>suit plusieurs / N étapes / phases</li>
+</ul>
+<p><b>Séquenceurs déclencheurs :</b> d'abord, premièrement, en premier lieu, ensuite, deuxièmement, puis, troisièmement, après, enfin, finalement, pour finir, étape N, phase N</p>
+<p><b>Titres déclencheurs :</b> étapes, processus, phases, déroulement, procédure, mécanisme, cycle, méthode</p>
+
+<hr>
+
+<h3>Pattern 5 — (Réservé / Intégré au Pattern 1)</h3>
+<p>Ce slot est fusionné avec le Pattern 1 (Définitions) dans le moteur actuel.</p>
+
+<hr>
+
+<h3>Pattern 6 — Caractéristiques / Propriétés</h3>
+<p><b>Question générée :</b> Quelles sont les caractéristiques de [mot-clé] ?</p>
+<ul>
+  <li>se caractérise par / est caractérisé(e) par</li>
+  <li>possède / présente les / des / plusieurs</li>
+  <li>a pour propriété / caractéristique / attribut / trait</li>
+  <li>comporte / dispose de</li>
+  <li>est doté(e) de / se distingue par</li>
+  <li>a les / des / plusieurs caractéristiques / propriétés / traits</li>
+</ul>
+
+<hr>
+
+<h3>Pattern 7 — Fonctions / Rôles</h3>
+<p><b>Question générée :</b> À quoi sert [mot-clé] ?</p>
+<ul>
+  <li>sert à / permet de</li>
+  <li>a pour fonction / rôle / but / mission / objectif</li>
+  <li>joue le / un rôle de</li>
+  <li>assure / vise à</li>
+  <li>est utilisé(e) pour / est destiné(e) à</li>
+  <li>contribue à / a pour vocation de</li>
+  <li>est chargé(e) de / remplit la / une fonction</li>
+</ul>
+
+<hr>
+
+<h3>Pattern 8 — Exemples / Illustrations</h3>
+<p><b>Question générée :</b> Citez des exemples de [mot-clé].</p>
+<ul>
+  <li>par exemple / comme (par exemple)</li>
+  <li>tels que / notamment</li>
+  <li>c'est le cas de</li>
+  <li>on peut citer / est illustré(e) par</li>
+  <li>à l'image de / incluent</li>
+  <li>parmi les / eux / elles / citons</li>
+</ul>
+
+<hr>
+
+<h3>Pattern 9 — Dates / Événements Historiques</h3>
+<p><b>Question générée :</b> En quelle année [mot-clé] a-t-il eu lieu ?</p>
+<ul>
+  <li>en [AAAA] (année sur 4 chiffres)</li>
+  <li>le [JJ mois AAAA]</li>
+  <li>au [Xème siècle]</li>
+  <li>a eu lieu / s'est produit / a débuté / commencé en / le</li>
+  <li>lors / pendant / au cours de</li>
+  <li>à l'époque de / date de</li>
+</ul>
+
+<hr>
+
+<h3>Pattern 10 — Avantages / Inconvénients</h3>
+<p><b>Question générée :</b> Citez un avantage et un inconvénient de [mot-clé] ? / Quels sont les avantages ? / Quelles sont les limites ?</p>
+<ul>
+  <li>l'avantage est / de</li>
+  <li>le point fort / l'atout / le bénéfice</li>
+  <li>l'intérêt est / de</li>
+  <li>le risque est / de</li>
+  <li>l'inconvénient / le point faible</li>
+  <li>la limite est / de</li>
+  <li>le (dés)avantage</li>
+  <li>cependant / néanmoins / toutefois / en revanche / mais</li>
+</ul>
+
+<hr>
+
+<h3>Pattern 11 — Classifications / Typologies</h3>
+<p><b>Question générée :</b> Quels sont les différents types de [mot-clé] ?</p>
+<ul>
+  <li>il existe N / plusieurs types / catégories</li>
+  <li>on distingue / se divise en</li>
+  <li>se répartit en / peut être classé(e) en</li>
+  <li>on recense</li>
+</ul>
+
+<hr>
+
+<h3>Pattern 12 — Conditions / Critères</h3>
+<p><b>Question générée :</b> Quelles sont les conditions pour [mot-clé] ?</p>
+<ul>
+  <li>à condition(s) que / de</li>
+  <li>nécessite / requiert / implique / suppose</li>
+  <li>il faut que / un / une / des</li>
+  <li>est nécessaire</li>
+</ul>
+
+<hr>
+
+<h3>Pattern 13 — Acteurs / Auteurs</h3>
+<p><b>Question générée :</b> Qui a découvert / proposé [concept] ?</p>
+<ul>
+  <li>selon [Nom Prénom]</li>
+  <li>d'après [Nom Prénom]</li>
+  <li>[Nom Prénom] a dit / écrit / proposé / découvert</li>
+  <li>théorie de [Nom Prénom]</li>
+  <li>travaux de [Nom Prénom]</li>
+  <li>découverte par [Nom Prénom]</li>
+</ul>
+
+<hr>
+
+<h3>Pattern 14 — Formules / Théorèmes</h3>
+<p><b>Question générée :</b> Quelle est la formule / règle de [mot-clé] ?</p>
+<ul>
+  <li>se calcule par / s'exprime par</li>
+  <li>la formule est</li>
+  <li>selon la loi de / le théorème stipule</li>
+  <li>la relation est / est donné(e) par</li>
+</ul>
+
+<hr>
+
+<h3>Pattern 15 — Chiffres / Statistiques</h3>
+<p><b>Question générée :</b> Quel chiffre / pourcentage correspond à [mot-clé] ?</p>
+<ul>
+  <li>représente N% / pourcents</li>
+  <li>atteint N / mesure N / compte N</li>
+</ul>
+
+<hr>
+
+<h3>Pattern 16 — Localisation</h3>
+<p><b>Question générée :</b> Où se situe [mot-clé] ?</p>
+<ul>
+  <li>se situe / se trouve</li>
+  <li>est localisé(e)</li>
+  <li>dans le / au nord / sud / est / ouest de</li>
+  <li>s'étend sur</li>
+</ul>
+
+<hr>
+
+<h3>Pattern 17 — Composition / Structure</h3>
+<p><b>Question générée :</b> De quoi est composé(e) [mot-clé] ?</p>
+<ul>
+  <li>est composé(e) de / comprend / contient</li>
+  <li>se compose de / est constitué(e) de</li>
+  <li>inclut / regroupe / est formé(e) de</li>
+</ul>
+
+<hr>
+
+<h3>Pattern 18 — Synonymes</h3>
+<p><b>Question générée :</b> Quels sont les synonymes / autres termes pour [mot-clé] ?</p>
+<ul>
+  <li>aussi appelé(e) / également nommé(e)</li>
+  <li>autrement dit / c'est-à-dire</li>
+  <li>alias / synonyme de</li>
+</ul>
+
+<hr>
+
+<h3>Pattern 19 — Exceptions</h3>
+<p><b>Question générée :</b> Quelle est l'exception concernant [mot-clé] ?</p>
+<ul>
+  <li>sauf / excepté / hormis</li>
+  <li>à l'exception de</li>
+  <li>attention / ne s'applique pas à</li>
+  <li>cas particulier / il faut noter que</li>
+</ul>
+
+<hr>
+
+<h3>Pattern 20 — Objectifs / Finalités</h3>
+<p><b>Question générée :</b> Quel est l'objectif de [mot-clé] ?</p>
+<ul>
+  <li>a pour objectif / vise à</li>
+  <li>dans le but de / afin de</li>
+  <li>l'enjeu est de / cherche à</li>
+</ul>
+
+<hr>
+
+<h3>Pattern 21 — Structure / Syntaxe</h3>
+<p><b>Question générée :</b> Quelle est la structure de la syntaxe de [mot-clé] ?</p>
+<ul>
+  <li>se présente comme suit</li>
+  <li>la structure de / la syntaxe (générale) de</li>
+  <li>s'écrit / se déclare / se formule</li>
+</ul>
+
+<hr>
+
+<h3>Pattern 22 — Abréviations / Significations</h3>
+<p><b>Question générée :</b> Que signifie l'acronyme [mot-clé] ?</p>
+<ul>
+  <li>ACRONYME (développé entre parenthèses)</li>
+  <li>signifie / veut dire</li>
+  <li>est l'abréviation de / est l'acronyme de</li>
+</ul>
+
+<hr>
+
+<h3>Pattern 23 — Tableaux de Formats (C / printf)</h3>
+<p><b>Question générée :</b> Quel format utilise-t-on pour afficher/lire un(e) [type] ?</p>
+<ul>
+  <li>%d, %f, %s, %c, %lf, %i … (spécificateurs de format C)</li>
+  <li>associés à leur type de donnée dans un tableau ou liste</li>
+</ul>
+
+<hr>
+
+<h3>Pattern 24 — Notes / Remarques</h3>
+<p><b>Question générée :</b> Quelle information importante (NB/Attention) concerne [mot-clé] ?</p>
+<ul>
+  <li>NB / N.B : …</li>
+  <li>Remarque : …</li>
+  <li>Attention : …</li>
+  <li>Important : …</li>
+  <li>À noter : …</li>
+</ul>
+
+<hr>
+
+<h3>Pattern 25 — Traductions Algo ↔ Code</h3>
+<p><b>Question générée :</b> Comment traduit-on [instruction] en langage code ?</p>
+<ul>
+  <li>ÉCRIRE / AFFICHER ↔ printf / console.log / print</li>
+  <li>LIRE / SAISIR ↔ scanf / input / prompt / cin</li>
+  <li>Affectation ← ↔ =</li>
+  <li>RACINE / sqrt ↔ √</li>
+</ul>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>GROUPE 2 — PATTERNS SYNTAXE CODE (26 à 31)</h2>
+<p>Priorité maximale : ces patterns priment sur tous les autres.</p>
+<!-- ═══════════════════════════════════════════════════ -->
+
+<h3>Pattern 26 — Boucle POUR / for</h3>
+<p><b>Question générée :</b> Écrire un algorithme utilisant une boucle POUR.</p>
+<ul>
+  <li>POUR variable DE ... À ... FAIRE</li>
+  <li>FIN POUR</li>
+  <li>for variable in range()</li>
+  <li>for (let/int/var variable = ...)</li>
+</ul>
+<p><b>Titres déclencheurs :</b> boucle pour, boucle for, répétition fixe, compteur, nombre de fois</p>
+
+<hr>
+
+<h3>Pattern 27 — Boucle TANT QUE / while</h3>
+<p><b>Question générée :</b> Écrire un algorithme utilisant une boucle TANT QUE.</p>
+<ul>
+  <li>TANT QUE ... FAIRE</li>
+  <li>FIN TANT QUE</li>
+  <li>while condition:</li>
+  <li>while (condition) {</li>
+</ul>
+<p><b>Titres déclencheurs :</b> tant que, while, boucle condition, répétition condition</p>
+
+<hr>
+
+<h3>Pattern 28 — Boucle RÉPÉTER JUSQU'À / do-while</h3>
+<p><b>Question générée :</b> Écrire un algorithme utilisant une boucle RÉPÉTER JUSQU'À.</p>
+<ul>
+  <li>RÉPÉTER</li>
+  <li>JUSQU'À</li>
+  <li>do {</li>
+  <li>} while (</li>
+</ul>
+<p><b>Titres déclencheurs :</b> répéter, jusqu'à, do-while, post-condition, saisie valide</p>
+
+<hr>
+
+<h3>Pattern 29 — Structure SI / SINON / if-else</h3>
+<p><b>Question générée :</b> Écrire un algorithme utilisant une alternative SI/SINON.</p>
+<ul>
+  <li>SI ... ALORS</li>
+  <li>SINON SI / FIN SI</li>
+  <li>if condition:</li>
+  <li>elif / if (condition) { / else if (</li>
+</ul>
+<p><b>Titres déclencheurs :</b> alternative, si sinon, if else, structure conditionnelle, prise de décision</p>
+
+<hr>
+
+<h3>Pattern 30 — Fonction / Procédure</h3>
+<p><b>Question générée :</b> Écrire et appeler une fonction.</p>
+<ul>
+  <li>FONCTION nom()</li>
+  <li>PROCÉDURE nom()</li>
+  <li>RETOURNER</li>
+  <li>def nom():</li>
+  <li>function nom() {</li>
+</ul>
+<p><b>Titres déclencheurs :</b> fonction, procédure, sous-programme, def, modularité, retourner</p>
+
+<hr>
+
+<h3>Pattern 31 — Tableau / Liste / Array</h3>
+<p><b>Question générée :</b> Écrire un algorithme utilisant un tableau.</p>
+<ul>
+  <li>TABLEAU[</li>
+  <li>variable[i] / variable[0..N]</li>
+  <li>[] * N (Python)</li>
+  <li>.append() / .push() / new Array()</li>
+</ul>
+<p><b>Titres déclencheurs :</b> tableau, array, liste, indice, index, parcours de</p>
+
+<hr>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<h2>GROUPE 3 — PATTERNS ANALYSE / COMPARAISON / RÈGLES (32 à 40)</h2>
+<p>Priorité 2 : après syntaxe, avant patterns textuels classiques.</p>
+<!-- ═══════════════════════════════════════════════════ -->
+
+<h3>Pattern 32 — Comparaison</h3>
+<p><b>Question générée :</b> Comparez les deux éléments mentionnés.</p>
+<ul>
+  <li>contrairement à / à l'opposé de</li>
+  <li>tandis que / alors que</li>
+  <li>par opposition à / en revanche</li>
+  <li>différence entre / comparé à / par rapport à</li>
+  <li>vs / versus</li>
+</ul>
+
+<hr>
+
+<h3>Pattern 33 — Erreur / Piège</h3>
+<p><b>Question générée :</b> Identifiez et corrigez l'erreur décrite.</p>
+<ul>
+  <li>erreur courante / fréquente / typique / classique / à éviter</li>
+  <li>piège fréquent / courant / classique</li>
+  <li>attention à ne pas</li>
+  <li>ne pas confondre</li>
+  <li>faute courante / fréquente / classique</li>
+  <li>risque d'erreur</li>
+</ul>
+
+<hr>
+
+<h3>Pattern 34 — Trace d'exécution</h3>
+<p><b>Question générée :</b> Complétez le tableau de trace.</p>
+<ul>
+  <li>tableau de trace / valeurs / suivi</li>
+  <li>trace d'exécution</li>
+  <li>déroulement pas à pas</li>
+  <li>valeurs successives</li>
+  <li>à l'itération N / après exécution</li>
+  <li>état du programme</li>
+</ul>
+
+<hr>
+
+<h3>Pattern 35 — Entrée / Sortie</h3>
+<p><b>Question générée :</b> Identifiez les entrées et sorties.</p>
+<ul>
+  <li>prend en entrée / retourne en sortie</li>
+  <li>retourne une valeur / le résultat</li>
+  <li>données d'entrée / valeur / résultat de retour</li>
+  <li>paramètres d'entrée</li>
+  <li>entrée : / sortie :</li>
+</ul>
+
+<hr>
+
+<h3>Pattern 36 — Préconditions / Postconditions</h3>
+<p><b>Question générée :</b> Énoncez les préconditions et postconditions.</p>
+<ul>
+  <li>précondition / postcondition</li>
+  <li>à condition que / sous réserve que</li>
+  <li>garantit que / assure que</li>
+  <li>contrat de / d'</li>
+</ul>
+
+<hr>
+
+<h3>Pattern 37 — Conversion de Langage</h3>
+<p><b>Question générée :</b> Traduisez dans l'autre langage.</p>
+<ul>
+  <li>équivalent en Python / JavaScript / algorithmique</li>
+  <li>s'écrit en Python</li>
+  <li>se traduit en JavaScript / Python</li>
+  <li>correspond en Python / JavaScript</li>
+  <li>la même chose en Python / JavaScript</li>
+  <li>Présence simultanée de code algo + Python ou algo + JS</li>
+</ul>
+
+<hr>
+
+<h3>Pattern 38 — Complexité Algorithmique</h3>
+<p><b>Question générée :</b> Analysez la complexité et proposez une amélioration.</p>
+<ul>
+  <li>complexité en temps / espace / temporelle / spatiale / algorithmique</li>
+  <li>O(n) / O(n²) / O(log n) / O(1) / O(n log n)</li>
+  <li>plus efficace / optimal / rapide que</li>
+  <li>moins efficace</li>
+  <li>coût en mémoire / computationnel / d'exécution</li>
+  <li>nombre d'opérations / algorithme optimal</li>
+</ul>
+
+<hr>
+
+<h3>Pattern 39 — Règle Absolue</h3>
+<p><b>Question générée :</b> Énoncez la règle et donnez un contre-exemple.</p>
+<ul>
+  <li>il faut toujours</li>
+  <li>on ne doit jamais / pas</li>
+  <li>ne jamais</li>
+  <li>principe fondamental</li>
+  <li>règle d'or / de base / fondamentale</li>
+  <li>toujours vérifier / s'assurer / initialiser</li>
+  <li>interdit de</li>
+</ul>
+
+<hr>
+
+<h3>Pattern 40 — Schéma / Organigramme / Diagramme</h3>
+<p><b>Question générée :</b> Décrivez ou reproduisez le schéma.</p>
+<ul>
+  <li>le / un schéma montre / représente / illustre</li>
+  <li>comme le montre la figure / le diagramme / le schéma</li>
+  <li>représenté par le / un diagramme / schéma</li>
+  <li>la figure / le diagramme ci-dessous / suivant</li>
+  <li>représentation graphique</li>
+  <li>organigramme</li>
+  <li>diagramme de / d' / des</li>
+</ul>
+
+<hr>
+
+<h2>Récapitulatif des 40 Patterns</h2>
+<table border="1" cellpadding="6" cellspacing="0">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Nom du Pattern</th>
+      <th>Question générée</th>
+      <th>Groupe</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>1</td><td>Définitions</td><td>Qu'est-ce que [X] ?</td><td>Textuel</td></tr>
+    <tr><td>2</td><td>Causes / Origines</td><td>Quelles sont les causes de [X] ?</td><td>Textuel</td></tr>
+    <tr><td>3</td><td>Conséquences / Effets</td><td>Quelles sont les conséquences de [X] ?</td><td>Textuel</td></tr>
+    <tr><td>4</td><td>Étapes / Processus</td><td>Quelles sont les étapes de [X] ?</td><td>Textuel</td></tr>
+    <tr><td>5</td><td>(Fusionné avec Pattern 1)</td><td>—</td><td>—</td></tr>
+    <tr><td>6</td><td>Caractéristiques / Propriétés</td><td>Quelles sont les caractéristiques de [X] ?</td><td>Textuel</td></tr>
+    <tr><td>7</td><td>Fonctions / Rôles</td><td>À quoi sert [X] ?</td><td>Textuel</td></tr>
+    <tr><td>8</td><td>Exemples / Illustrations</td><td>Citez des exemples de [X].</td><td>Textuel</td></tr>
+    <tr><td>9</td><td>Dates / Événements</td><td>En quelle année [X] a-t-il eu lieu ?</td><td>Textuel</td></tr>
+    <tr><td>10</td><td>Avantages / Inconvénients</td><td>Avantage et inconvénient de [X] ?</td><td>Textuel</td></tr>
+    <tr><td>11</td><td>Classifications / Typologies</td><td>Quels sont les types de [X] ?</td><td>Textuel</td></tr>
+    <tr><td>12</td><td>Conditions / Critères</td><td>Quelles sont les conditions pour [X] ?</td><td>Textuel</td></tr>
+    <tr><td>13</td><td>Acteurs / Auteurs</td><td>Qui a découvert / proposé [X] ?</td><td>Textuel</td></tr>
+    <tr><td>14</td><td>Formules / Théorèmes</td><td>Quelle est la formule de [X] ?</td><td>Textuel</td></tr>
+    <tr><td>15</td><td>Chiffres / Statistiques</td><td>Quel chiffre correspond à [X] ?</td><td>Textuel</td></tr>
+    <tr><td>16</td><td>Localisation</td><td>Où se situe [X] ?</td><td>Textuel</td></tr>
+    <tr><td>17</td><td>Composition / Structure</td><td>De quoi est composé [X] ?</td><td>Textuel</td></tr>
+    <tr><td>18</td><td>Synonymes</td><td>Quels sont les synonymes de [X] ?</td><td>Textuel</td></tr>
+    <tr><td>19</td><td>Exceptions</td><td>Quelle est l'exception concernant [X] ?</td><td>Textuel</td></tr>
+    <tr><td>20</td><td>Objectifs / Finalités</td><td>Quel est l'objectif de [X] ?</td><td>Textuel</td></tr>
+    <tr><td>21</td><td>Structure / Syntaxe</td><td>Quelle est la syntaxe de [X] ?</td><td>Textuel</td></tr>
+    <tr><td>22</td><td>Abréviations</td><td>Que signifie l'acronyme [X] ?</td><td>Textuel</td></tr>
+    <tr><td>23</td><td>Formats printf/scanf</td><td>Quel format pour afficher un [type] ?</td><td>Textuel</td></tr>
+    <tr><td>24</td><td>Notes / Remarques (NB)</td><td>Information importante sur [X] ?</td><td>Textuel</td></tr>
+    <tr><td>25</td><td>Traductions Algo ↔ Code</td><td>Comment traduit-on [X] en code ?</td><td>Textuel</td></tr>
+    <tr><td>26</td><td>Boucle POUR / for</td><td>Écrire un algo avec une boucle POUR.</td><td>Syntaxe</td></tr>
+    <tr><td>27</td><td>Boucle TANT QUE / while</td><td>Écrire un algo avec une boucle TANT QUE.</td><td>Syntaxe</td></tr>
+    <tr><td>28</td><td>Boucle RÉPÉTER JUSQU'À / do-while</td><td>Écrire un algo avec RÉPÉTER JUSQU'À.</td><td>Syntaxe</td></tr>
+    <tr><td>29</td><td>Structure SI / SINON</td><td>Écrire un algo avec SI/SINON.</td><td>Syntaxe</td></tr>
+    <tr><td>30</td><td>Fonction / Procédure</td><td>Écrire et appeler une fonction.</td><td>Syntaxe</td></tr>
+    <tr><td>31</td><td>Tableau / Liste / Array</td><td>Écrire un algo avec un tableau.</td><td>Syntaxe</td></tr>
+    <tr><td>32</td><td>Comparaison</td><td>Comparez les deux éléments mentionnés.</td><td>Analyse</td></tr>
+    <tr><td>33</td><td>Erreur / Piège</td><td>Identifiez et corrigez l'erreur.</td><td>Analyse</td></tr>
+    <tr><td>34</td><td>Trace d'exécution</td><td>Complétez le tableau de trace.</td><td>Analyse</td></tr>
+    <tr><td>35</td><td>Entrée / Sortie</td><td>Identifiez les entrées et sorties.</td><td>Analyse</td></tr>
+    <tr><td>36</td><td>Préconditions / Postconditions</td><td>Énoncez les pré/postconditions.</td><td>Analyse</td></tr>
+    <tr><td>37</td><td>Conversion de Langage</td><td>Traduisez dans l'autre langage.</td><td>Analyse</td></tr>
+    <tr><td>38</td><td>Complexité Algorithmique</td><td>Analysez la complexité.</td><td>Analyse</td></tr>
+    <tr><td>39</td><td>Règle Absolue</td><td>Énoncez la règle + contre-exemple.</td><td>Analyse</td></tr>
+    <tr><td>40</td><td>Schéma / Organigramme</td><td>Décrivez ou reproduisez le schéma.</td><td>Analyse</td></tr>
+  </tbody>
+</table>
+
+</body>
+</html>

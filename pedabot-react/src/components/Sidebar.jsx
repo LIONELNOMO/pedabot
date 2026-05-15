@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
 
 // ══════════════════════════════════════
@@ -9,41 +9,11 @@ import { useApp } from '../context/AppContext';
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default function Sidebar() {
-  const { setStep, addMessage, wizardDraft, setWizardDraft, step, token: authToken } = useApp();
+  const { setStep, addMessage, wizardDraft, setWizardDraft, step } = useApp();
   const [activeTab, setActiveTab] = useState('saisir');
   const [courseText, setCourseText] = useState('');
   const [isAnalyzed, setIsAnalyzed] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-
-  // ── ONGLET COPIES ──
-  const [myExercises, setMyExercises]   = useState(null);  // null | 'loading' | []
-  const [selectedEx,  setSelectedEx]    = useState(null);  // { token, titre }
-  const [submissions, setSubmissions]   = useState(null);  // null | 'loading' | []
-
-  const fetchMyExercises = useCallback(async () => {
-    if (authToken === 'guest') return;
-    setMyExercises('loading');
-    setSelectedEx(null);
-    setSubmissions(null);
-    try {
-      const res  = await fetch(`${API_URL}/api/exercises/mine`, {
-        headers: { Authorization: `Bearer ${authToken}` },
-      });
-      const data = await res.json();
-      setMyExercises(Array.isArray(data) ? data : []);
-    } catch {
-      setMyExercises([]);
-    }
-  }, [authToken]);
-
-  useEffect(() => {
-    if (activeTab === 'copies') fetchMyExercises();
-  }, [activeTab]);
-
-  const fetchSubmissions = (ex) => {
-    setSelectedEx(ex);
-    setSubmissions(ex.eleves || []);
-  };
 
   // Quand resetSession remet step à IDLE, on réinitialise la sidebar
   useEffect(() => {
@@ -168,21 +138,16 @@ export default function Sidebar() {
     }
   };
 
-  const diffLabel = (d) => d === 'facile' ? 'Facile' : d === 'moyen' ? 'Moyen' : d === 'difficile' ? 'Difficile' : d || '';
-  const fmtDate   = (iso) => new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
-  const fmtTime   = (iso) => new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-
   return (
     <aside className="sidebar">
       <div className="sb-head">
         <div className="sb-htitle">
-          <div className="sb-icon">{activeTab === 'copies' ? '✉' : '≡'}</div>
-          {activeTab === 'copies' ? 'Copies élèves' : 'Votre cours'}
+          <div className="sb-icon">≡</div>
+          Votre cours
         </div>
         <div className="tabs">
           <button className={`tab ${activeTab === 'saisir' ? 'on' : ''}`} onClick={() => setActiveTab('saisir')}>✎ Saisir</button>
           <button className={`tab ${activeTab === 'import' ? 'on' : ''}`} onClick={() => setActiveTab('import')}>⊕ Importer</button>
-          <button className={`tab ${activeTab === 'copies' ? 'on' : ''}`} onClick={() => setActiveTab('copies')}>✉ Copies</button>
         </div>
       </div>
 
@@ -224,86 +189,6 @@ export default function Sidebar() {
           <div style={{ marginTop: '8px', padding: '8px 12px', background: 'var(--danger-bg)', color: 'var(--danger)', borderRadius: '8px', fontSize: '13px' }}>
             ⚠ {extractError}
           </div>
-        )}
-      </div>
-
-      {/* ── ONGLET COPIES ── */}
-      <div className="sb-body copies-panel" style={{ display: activeTab === 'copies' ? 'flex' : 'none', flexDirection: 'column', gap: '0' }}>
-
-        {authToken === 'guest' && (
-          <div className="cp-empty">Créez un compte pour partager des exercices et consulter les copies.</div>
-        )}
-
-        {authToken !== 'guest' && (
-          <>
-            {/* Vue liste des exercices */}
-            {!selectedEx && (
-              <>
-                <div className="cp-toolbar">
-                  <span className="cp-toolbar-label">Exercices partagés</span>
-                  <button className="cp-refresh" onClick={fetchMyExercises}>↻ Actualiser</button>
-                </div>
-
-                {myExercises === null && (
-                  <div className="cp-empty">Cliquez sur "Actualiser" pour charger vos exercices.</div>
-                )}
-                {myExercises === 'loading' && (
-                  <div className="cp-empty">◌ Chargement…</div>
-                )}
-                {Array.isArray(myExercises) && myExercises.length === 0 && (
-                  <div className="cp-empty">Aucun exercice partagé pour l'instant.<br/>Générez des exercices et cliquez sur "Envoyer aux élèves".</div>
-                )}
-                {Array.isArray(myExercises) && myExercises.map((ex, i) => {
-                  const submitted = ex.eleves.filter(e => e.submitted).length;
-                  return (
-                    <button key={i} className="cp-ex-row" onClick={() => fetchSubmissions(ex)}>
-                      <div className="cp-ex-info">
-                        <div className="cp-ex-titre">{ex.titre}</div>
-                        <div className="cp-ex-meta">{diffLabel(ex.difficulty)} · {ex.eleves.length} élève{ex.eleves.length > 1 ? 's' : ''}</div>
-                      </div>
-                      <div className="cp-ex-badge">
-                        <span className={`cp-count ${submitted > 0 ? 'has' : ''}`}>{submitted}/{ex.eleves.length}</span>
-                        <span className="cp-arrow">›</span>
-                      </div>
-                    </button>
-                  );
-                })}
-              </>
-            )}
-
-            {/* Vue copies d'un exercice */}
-            {selectedEx && (
-              <>
-                <div className="cp-toolbar">
-                  <button className="cp-back" onClick={() => { setSelectedEx(null); setSubmissions(null); }}>‹ Retour</button>
-                  <span className="cp-toolbar-label" style={{ fontSize: '12px' }}>{selectedEx.titre}</span>
-                </div>
-
-                {submissions === 'loading' && (
-                  <div className="cp-empty">◌ Chargement des copies…</div>
-                )}
-                {Array.isArray(submissions) && submissions.length === 0 && (
-                  <div className="cp-empty">Aucune copie reçue pour cet exercice.</div>
-                )}
-                {Array.isArray(submissions) && submissions.map((s, i) => (
-                  <div key={i} className="cp-sub-card">
-                    <div className="cp-sub-header">
-                      <span className="cp-sub-name">{s.eleve_email}</span>
-                      <span className={`cp-sub-tag ${s.submitted ? 'done' : 'todo'}`}>
-                        {s.submitted ? '✓ Soumis' : 'En attente'}
-                      </span>
-                    </div>
-                    {s.submitted && s.reponses && (
-                      <>
-                        <div className="cp-sub-date">{fmtDate(s.submitted_at)} {fmtTime(s.submitted_at)}</div>
-                        <div className="cp-sub-body">{s.reponses}</div>
-                      </>
-                    )}
-                  </div>
-                ))}
-              </>
-            )}
-          </>
         )}
       </div>
     </aside>
