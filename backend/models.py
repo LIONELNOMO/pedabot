@@ -48,3 +48,18 @@ class GenerationResponse(BaseModel):
 
 class DeepenResponse(BaseModel):
     exercise: ExerciseOutput
+
+
+# ══════════════════════════════════════
+#  PARTAGE ÉLÈVES
+# ══════════════════════════════════════
+
+class AssignRequest(BaseModel):
+    titre: str
+    exercise: dict
+    lang: str = ""
+    difficulty: str = ""
+    emails: List[str]
+
+class SubmitRequest(BaseModel):
+    reponses: str

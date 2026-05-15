@@ -21,9 +21,9 @@ def verify_password(plain: str, hashed: str) -> bool:
     return pwd_context.verify(plain, hashed)
 
 
-def create_token(user_id: int, email: str, nom: str) -> str:
+def create_token(user_id: int, email: str, nom: str, role: str = 'prof') -> str:
     expire = datetime.utcnow() + timedelta(days=TOKEN_EXPIRE_DAYS)
-    payload = {"sub": str(user_id), "email": email, "nom": nom, "exp": expire}
+    payload = {"sub": str(user_id), "email": email, "nom": nom, "role": role, "exp": expire}
     return jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
 
 
@@ -40,16 +40,19 @@ def get_user_by_email(session: Session, email: str) -> Optional[User]:
 
 def seed_demo_accounts(session: Session):
     demos = [
-        {"email": "demo@pedabot.com",  "nom": "Prof. Demo",    "password": "demo123"},
-        {"email": "kamga@pedabot.com", "nom": "M. Kamga",      "password": "demo123"},
-        {"email": "ngono@pedabot.com", "nom": "Mme Ngono",     "password": "demo123"},
+        {"email": "demo@pedabot.com",   "nom": "Prof. Demo",   "password": "demo123", "role": "prof"},
+        {"email": "kamga@pedabot.com",  "nom": "M. Kamga",     "password": "demo123", "role": "prof"},
+        {"email": "ngono@pedabot.com",  "nom": "Mme Ngono",    "password": "demo123", "role": "prof"},
+        {"email": "eleve@pedabot.com",  "nom": "Jean-Paul",    "password": "demo123", "role": "eleve"},
+        {"email": "amina@pedabot.com",  "nom": "Amina Bello",  "password": "demo123", "role": "eleve"},
     ]
     for d in demos:
         if not get_user_by_email(session, d["email"]):
             user = User(
                 email=d["email"],
                 nom=d["nom"],
-                password_hash=hash_password(d["password"])
+                password_hash=hash_password(d["password"]),
+                role=d["role"],
             )
             session.add(user)
     session.commit()

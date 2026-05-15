@@ -93,7 +93,7 @@ export default function ChatArea() {
         {displayMessages.length === 0 && (
           <div className="mrow bot">
             <div className="mavatar bot">PB</div>
-            <div className="mbubble" dangerouslySetInnerHTML={{__html: `Bonjour <strong>${user}</strong> ! Je suis <strong>PédaBot</strong>, votre assistant de consolidation pédagogique.<br><br>
+            <div className="mbubble" dangerouslySetInnerHTML={{__html: `Bonjour <strong>${user?.nom || 'Enseignant'}</strong> ! Je suis <strong>PédaBot</strong>, votre assistant de consolidation pédagogique.<br><br>
               Je vais vous guider étape par étape pour créer des exercices adaptés à votre cours.<br><br>
               Commencez par <strong>saisir ou coller votre cours</strong> dans le panneau de gauche, puis cliquez sur <strong>"Analyser le cours"</strong>.`}}></div>
           </div>

@@ -23,8 +23,10 @@ export const AppProvider = ({ children }) => {
     exName: '', sections: [], selSections: [], difficulty: '', lang: 'algo'
   });
   const [messages, setMessages] = useState([]);
+  const [showWelcome, setShowWelcome] = useState(false);
 
   const addMessage = (msgObj) => setMessages(prev => [...prev, msgObj]);
+  const dismissWelcome = () => setShowWelcome(false);
 
   const resetSession = () => {
     setStep('IDLE');
@@ -40,6 +42,7 @@ export const AppProvider = ({ children }) => {
     setToken(authToken);
     localStorage.setItem('pedabot-user', JSON.stringify(userData));
     localStorage.setItem('pedabot-token', authToken);
+    setShowWelcome(true);
   };
 
   // Déconnexion — tout effacer
@@ -58,7 +61,8 @@ export const AppProvider = ({ children }) => {
       step, setStep,
       wizardDraft, setWizardDraft,
       messages, addMessage,
-      resetSession
+      resetSession,
+      showWelcome, dismissWelcome
     }}>
       {children}
     </AppContext.Provider>

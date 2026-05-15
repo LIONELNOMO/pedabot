@@ -221,8 +221,50 @@ function RecapMessage() {
 // ----- EXERCISE CARD -----
 function ExerciseMessage({ msg }) {
   const { exercise } = msg;
+  const { token: authToken, wizardDraft } = useApp();
+  const [modal, setModal]       = useState(false);
+  const [eleves, setEleves]     = useState(null);   // null | 'loading' | []
+  const [selected, setSelected] = useState([]);     // emails cochés
+  const [status, setStatus]     = useState(null);   // null | 'loading' | 'ok' | 'error'
+
   const lvlClass = exercise.level === 'facile' ? 'easy' : exercise.level === 'moyen' ? 'med' : 'hard';
   const lvlLabel = exercise.level === 'facile' ? 'Niveau Facile' : exercise.level === 'moyen' ? 'Niveau Moyen' : 'Niveau Avancé';
+
+  const openModal = async () => {
+    if (authToken === 'guest') { alert('Créez un compte pour envoyer des exercices.'); return; }
+    setModal(true);
+    setStatus(null);
+    setSelected([]);
+    setEleves('loading');
+    try {
+      const res  = await fetch(`${API_URL}/api/eleves`, { headers: { Authorization: `Bearer ${authToken}` } });
+      const data = await res.json();
+      setEleves(Array.isArray(data) ? data : []);
+    } catch { setEleves([]); }
+  };
+
+  const toggleEleve = (email) => {
+    setSelected(prev => prev.includes(email) ? prev.filter(e => e !== email) : [...prev, email]);
+  };
+
+  const handleAssign = async () => {
+    if (selected.length === 0) { setStatus('error'); return; }
+    setStatus('loading');
+    try {
+      const res = await fetch(`${API_URL}/api/exercises/assign`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
+        body: JSON.stringify({
+          titre:      exercise.title,
+          exercise,
+          lang:       wizardDraft.lang || '',
+          difficulty: exercise.level || '',
+          emails:     selected,
+        }),
+      });
+      setStatus(res.ok ? 'ok' : 'error');
+    } catch { setStatus('error'); }
+  };
 
   return (
     <div className="mrow bot">
@@ -232,7 +274,68 @@ function ExerciseMessage({ msg }) {
         <div className="extitle">{exercise.title}</div>
         <div className="exbody" dangerouslySetInnerHTML={{__html: exercise.body}}></div>
         {exercise.code && <div className="excode">{exercise.code}</div>}
+        <button className="share-btn" onClick={openModal}>✉ Envoyer aux élèves</button>
       </div>
+
+      {modal && (
+        <div className="share-overlay" onClick={() => setModal(false)}>
+          <div className="share-modal" onClick={e => e.stopPropagation()}>
+            <div className="sm-head">
+              <span className="sm-title">Envoyer aux élèves</span>
+              <button className="sm-close" onClick={() => setModal(false)}>✕</button>
+            </div>
+
+            {status === 'ok' ? (
+              <div className="sm-ok">
+                ✓ Exercice envoyé à {selected.length} élève{selected.length > 1 ? 's' : ''} ! Ils le verront en se connectant.
+              </div>
+            ) : (
+              <>
+                {eleves === 'loading' && <div className="sm-loading">◌ Chargement des élèves…</div>}
+
+                {Array.isArray(eleves) && eleves.length === 0 && (
+                  <div className="sm-hint">Aucun élève inscrit pour l'instant. Les élèves doivent créer un compte avec le rôle "Élève".</div>
+                )}
+
+                {Array.isArray(eleves) && eleves.length > 0 && (
+                  <>
+                    <div className="sm-label">Sélectionnez les élèves :</div>
+                    <div className="sm-eleve-list">
+                      {eleves.map(e => (
+                        <label key={e.email} className={`sm-eleve-row ${selected.includes(e.email) ? 'checked' : ''}`}>
+                          <input
+                            type="checkbox"
+                            checked={selected.includes(e.email)}
+                            onChange={() => toggleEleve(e.email)}
+                          />
+                          <div className="sm-eleve-avatar">{e.nom.substring(0, 2).toUpperCase()}</div>
+                          <div className="sm-eleve-info">
+                            <span className="sm-eleve-nom">{e.nom}</span>
+                            <span className="sm-eleve-email">{e.email}</span>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+
+                    {status === 'error' && (
+                      <div className="sm-error">⚠ Sélectionnez au moins un élève.</div>
+                    )}
+
+                    <div className="sm-footer">
+                      <span className="sm-count">
+                        {selected.length > 0 ? `${selected.length} élève${selected.length > 1 ? 's' : ''} sélectionné${selected.length > 1 ? 's' : ''}` : 'Aucun élève sélectionné'}
+                      </span>
+                      <button className="sm-send-btn" onClick={handleAssign} disabled={status === 'loading'}>
+                        {status === 'loading' ? '◌ Envoi…' : '✓ Envoyer'}
+                      </button>
+                    </div>
+                  </>
+                )}
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
