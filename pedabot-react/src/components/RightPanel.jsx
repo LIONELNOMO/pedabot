@@ -10,7 +10,44 @@ export default function RightPanel() {
   const [myExercises, setMyExercises] = useState(null);
   const [selectedEx,  setSelectedEx]  = useState(null);
   const [submissions, setSubmissions] = useState(null);
-  const [openedSub,   setOpenedSub]   = useState(null); // copie affichée en grand
+  const [openedSub,   setOpenedSub]   = useState(null);
+
+  // ── Devoirs assignés (élèves inscrits) ──
+  const [assignments, setAssignments] = useState(null);
+  const [openedAssign, setOpenedAssign] = useState(null);
+  const [feedbackDraft, setFeedbackDraft] = useState('');
+  const [feedbackSending, setFeedbackSending] = useState(false);
+
+  const fetchAssignments = async () => {
+    if (!authToken || authToken === 'guest') return;
+    setAssignments('loading');
+    try {
+      const res  = await fetch(`${API_URL}/api/exercises/assignments`, { headers: { Authorization: `Bearer ${authToken}` } });
+      const data = await res.json();
+      setAssignments(Array.isArray(data) ? data : []);
+    } catch { setAssignments([]); }
+  };
+
+  const openAssignment = (a) => {
+    setOpenedAssign(a);
+    setFeedbackDraft(a.feedback || '');
+  };
+
+  const sendFeedback = async () => {
+    if (!feedbackDraft.trim() || !openedAssign) return;
+    setFeedbackSending(true);
+    try {
+      const res = await fetch(`${API_URL}/api/exercice/${openedAssign.id}/feedback`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
+        body: JSON.stringify({ feedback: feedbackDraft.trim() }),
+      });
+      if (res.ok) {
+        setOpenedAssign(prev => ({ ...prev, feedback: feedbackDraft.trim(), feedback_at: new Date().toISOString() }));
+        fetchAssignments();
+      }
+    } catch {} finally { setFeedbackSending(false); }
+  };
 
   const fmtDate = (iso) => new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' });
   const fmtTime = (iso) => new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
@@ -39,8 +76,11 @@ export default function RightPanel() {
 
   // Recharger quand un exercice est généré (step passe à DONE)
   useEffect(() => {
-    if (step === 'DONE') fetchMyExercises();
+    if (step === 'DONE') { fetchMyExercises(); fetchAssignments(); }
   }, [step]);
+
+  // Charger les assignations au montage
+  useEffect(() => { fetchAssignments(); }, []);
 
   // Stats dynamiques
   const exCount = wizardDraft.exCount || 0;
@@ -251,6 +291,84 @@ export default function RightPanel() {
               ))}
             </>
           )}
+        </div>
+      )}
+
+      {/* ── DEVOIRS AUX ÉLÈVES INSCRITS ── */}
+      {authToken && authToken !== 'guest' && (
+        <div className="rp-copies" style={{ marginTop: '18px' }}>
+          <div className="rp-copies-head">
+            <span className="rp-sec-title" style={{ margin: 0 }}>✓ Devoirs aux élèves</span>
+            <button className="cp-refresh" onClick={fetchAssignments}>↻</button>
+          </div>
+
+          {assignments === null && <div className="rp-copies-empty">Chargement…</div>}
+          {assignments === 'loading' && <div className="rp-copies-empty">◌ Chargement…</div>}
+          {Array.isArray(assignments) && assignments.length === 0 && (
+            <div className="rp-copies-empty">Aucun devoir envoyé à un élève inscrit.</div>
+          )}
+
+          {Array.isArray(assignments) && assignments.map(a => (
+            <button key={a.id} className="rp-assign-row" onClick={() => openAssignment(a)}>
+              <div className="rp-assign-avatar">{(a.eleve_email || '?').substring(0, 2).toUpperCase()}</div>
+              <div className="rp-assign-info">
+                <div className="rp-assign-name">{a.eleve_email}</div>
+                <div className="rp-assign-titre">{a.titre}</div>
+              </div>
+              <span className={`rp-assign-tag ${a.submitted_at ? (a.feedback ? 'fb' : 'sub') : 'todo'}`}>
+                {a.submitted_at ? (a.feedback ? '✓ Corrigé' : 'À corriger') : 'En attente'}
+              </span>
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* ── MODALE FEEDBACK PROF ── */}
+      {openedAssign && (
+        <div className="copy-overlay" onClick={() => setOpenedAssign(null)}>
+          <div className="copy-modal" onClick={e => e.stopPropagation()}>
+            <div className="copy-modal-head">
+              <div className="copy-modal-who">
+                <div className="copy-modal-avatar">{(openedAssign.eleve_email || '?').substring(0, 2).toUpperCase()}</div>
+                <div>
+                  <div className="copy-modal-name">{openedAssign.eleve_email}</div>
+                  <div className="copy-modal-meta">{openedAssign.titre}</div>
+                </div>
+              </div>
+              <button className="copy-modal-close" onClick={() => setOpenedAssign(null)}>✕</button>
+            </div>
+
+            {openedAssign.submitted_at ? (
+              <>
+                <div className="copy-modal-label">Réponse de l'élève · {fmtDate(openedAssign.submitted_at)} {fmtTime(openedAssign.submitted_at)}</div>
+                <div className="copy-modal-body">{openedAssign.reponses}</div>
+
+                <div className="copy-modal-label" style={{ marginTop: '14px' }}>
+                  {openedAssign.feedback ? 'Votre retour' : 'Écrivez un retour à l\'élève'}
+                </div>
+                <textarea
+                  className="fb-textarea"
+                  placeholder="Ex : Bonne réflexion sur la Q1. Pour la Q2, pense à vérifier le cas où la liste est vide…"
+                  value={feedbackDraft}
+                  onChange={e => setFeedbackDraft(e.target.value)}
+                  rows={6}
+                />
+                {openedAssign.feedback_at && (
+                  <div className="fb-sent">Envoyé le {fmtDate(openedAssign.feedback_at)} {fmtTime(openedAssign.feedback_at)}</div>
+                )}
+                <button
+                  className="fb-send-btn"
+                  disabled={!feedbackDraft.trim() || feedbackSending}
+                  onClick={sendFeedback}>
+                  {feedbackSending ? '◌ Envoi…' : openedAssign.feedback ? 'Mettre à jour le retour' : 'Envoyer à l\'élève'}
+                </button>
+              </>
+            ) : (
+              <div className="copy-modal-body" style={{ fontStyle: 'italic', color: 'var(--text-3)' }}>
+                L'élève n'a pas encore soumis sa copie.
+              </div>
+            )}
+          </div>
         </div>
       )}
 

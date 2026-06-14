@@ -9,7 +9,7 @@ import { useApp } from '../context/AppContext';
 const API_URL = import.meta.env.VITE_API_URL;
 
 export default function Sidebar() {
-  const { setStep, addMessage, wizardDraft, setWizardDraft, step } = useApp();
+  const { setStep, addMessage, setMessages, wizardDraft, setWizardDraft, step } = useApp();
   const [activeTab, setActiveTab] = useState('saisir');
   const [courseText, setCourseText] = useState('');
   const [isAnalyzed, setIsAnalyzed] = useState(false);

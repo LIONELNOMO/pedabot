@@ -60,7 +60,7 @@ export const AppProvider = ({ children }) => {
       theme, toggleDark,
       step, setStep,
       wizardDraft, setWizardDraft,
-      messages, addMessage,
+      messages, addMessage, setMessages,
       resetSession,
       showWelcome, dismissWelcome
     }}>

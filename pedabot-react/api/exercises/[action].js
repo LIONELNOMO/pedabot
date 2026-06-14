@@ -7,83 +7,147 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   const user = requireAuth(req);
-  if (!user || user.role !== 'prof') return res.status(403).json({ error: 'Accès réservé aux professeurs' });
+  if (!user || user.role !== 'prof') return res.status(403).json({ detail: 'Accès réservé aux professeurs' });
 
   const { action } = req.query;
 
+  const teacherId = Number(user.sub);
+
+  // ─── GET /api/exercises/mine ───
   if (action === 'mine' && req.method === 'GET') {
     const { data: exercises, error } = await supabase
       .from('exercisedb')
-      .select(`
-        id, nom, contenu, created_at,
-        sharedlink (token),
-        submission (count)
-      `)
-      .eq('prof_id', user.sub)
+      .select('id, titre, contenu, lang, difficulty, created_at')
+      .eq('teacher_id', teacherId)
       .order('created_at', { ascending: false });
 
-    if (error) return res.status(500).json({ error: 'Erreur récupération exercices' });
+    if (error) return res.status(500).json({ detail: 'Erreur récupération exercices' });
 
-    const result = exercises.map(ex => ({
-      id: ex.id,
-      nom: ex.nom,
-      contenu: ex.contenu,
-      created_at: ex.created_at,
-      token: ex.sharedlink?.[0]?.token ?? null,
-      nb_soumissions: ex.submission?.[0]?.count ?? 0,
-    }));
+    if (!exercises.length) return res.status(200).json([]);
+
+    const exIds = exercises.map(e => e.id);
+    const { data: links } = await supabase
+      .from('sharedlink')
+      .select('token, exercise_id')
+      .in('exercise_id', exIds);
+
+    const tokens = (links ?? []).map(l => l.token);
+    const counts = {};
+    if (tokens.length) {
+      const { data: subs } = await supabase
+        .from('submission')
+        .select('token')
+        .in('token', tokens);
+      (subs ?? []).forEach(s => { counts[s.token] = (counts[s.token] ?? 0) + 1; });
+    }
+
+    const tokenByExId = {};
+    (links ?? []).forEach(l => { tokenByExId[l.exercise_id] = l.token; });
+
+    const result = exercises.map(ex => {
+      const token = tokenByExId[ex.id] ?? null;
+      return {
+        id: ex.id,
+        titre: ex.titre,
+        contenu: ex.contenu,
+        lang: ex.lang,
+        difficulty: ex.difficulty,
+        created_at: ex.created_at,
+        token,
+        submission_count: token ? (counts[token] ?? 0) : 0,
+      };
+    });
 
     return res.status(200).json(result);
   }
 
+  // ─── POST /api/exercises/share ───
   if (action === 'share' && req.method === 'POST') {
-    const { nom, contenu } = req.body || {};
-    if (!nom || !contenu) return res.status(400).json({ error: 'Nom et contenu requis' });
+    const { titre, exercise, lang, difficulty } = req.body || {};
+    if (!titre || !exercise) return res.status(400).json({ detail: 'Titre et exercice requis' });
 
-    const token = uuidv4();
+    const contenu = typeof exercise === 'string' ? exercise : JSON.stringify(exercise);
 
     const { data: ex, error: exErr } = await supabase
       .from('exercisedb')
-      .insert({ prof_id: user.sub, nom, contenu })
+      .insert({
+        teacher_id: teacherId,
+        teacher_nom: user.nom,
+        titre,
+        contenu,
+        lang: lang ?? '',
+        difficulty: difficulty ?? '',
+      })
       .select('id')
       .single();
 
-    if (exErr) return res.status(500).json({ error: 'Erreur sauvegarde exercice' });
+    if (exErr) {
+      console.error('share/exercisedb insert error:', exErr);
+      return res.status(500).json({ detail: 'Erreur sauvegarde exercice' });
+    }
 
+    const token = uuidv4();
     const { error: linkErr } = await supabase
       .from('sharedlink')
-      .insert({ token, exercise_id: ex.id, prof_id: user.sub });
+      .insert({ token, exercise_id: ex.id, teacher_id: teacherId });
 
-    if (linkErr) return res.status(500).json({ error: 'Erreur création lien' });
+    if (linkErr) return res.status(500).json({ detail: 'Erreur création lien' });
 
     return res.status(201).json({ token, exercise_id: ex.id });
   }
 
+  // ─── POST /api/exercises/assign ───
   if (action === 'assign' && req.method === 'POST') {
-    const { exercise_id, eleve_ids } = req.body || {};
-    if (!exercise_id || !Array.isArray(eleve_ids) || eleve_ids.length === 0)
-      return res.status(400).json({ error: 'exercise_id et eleve_ids requis' });
+    const { exercise_id, eleve_emails } = req.body || {};
+    if (!exercise_id || !Array.isArray(eleve_emails) || eleve_emails.length === 0)
+      return res.status(400).json({ detail: 'exercise_id et eleve_emails requis' });
 
     const { data: ex, error: exErr } = await supabase
       .from('exercisedb')
-      .select('id')
-      .eq('id', exercise_id)
-      .eq('prof_id', user.sub)
-      .single();
+      .select('titre, contenu, lang, difficulty')
+      .eq('id', Number(exercise_id))
+      .eq('teacher_id', teacherId)
+      .maybeSingle();
 
-    if (exErr || !ex) return res.status(404).json({ error: 'Exercice introuvable' });
+    if (exErr || !ex) {
+      console.error('assign/exercise lookup error:', exErr, 'exercise_id:', exercise_id, 'teacher_id:', teacherId);
+      return res.status(404).json({ detail: 'Exercice introuvable' });
+    }
 
-    const rows = eleve_ids.map(eleve_id => ({ exercise_id, eleve_id, statut: 'assigné' }));
+    const rows = eleve_emails.map(email => ({
+      teacher_id: teacherId,
+      teacher_nom: user.nom,
+      eleve_email: String(email).toLowerCase().trim(),
+      titre: ex.titre,
+      contenu: ex.contenu,
+      lang: ex.lang,
+      difficulty: ex.difficulty,
+    }));
 
-    const { error } = await supabase.from('assignment').upsert(rows, {
-      onConflict: 'exercise_id,eleve_id',
-      ignoreDuplicates: true,
-    });
+    const { error } = await supabase.from('assignment').insert(rows);
+    if (error) {
+      console.error('assign/assignment insert error:', error);
+      return res.status(500).json({ detail: 'Erreur assignation' });
+    }
 
-    if (error) return res.status(500).json({ error: 'Erreur assignation' });
-
-    return res.status(201).json({ message: `Exercice assigné à ${eleve_ids.length} élève(s)` });
+    return res.status(201).json({ message: `Exercice assigné à ${eleve_emails.length} élève(s)` });
   }
 
-  return res.status(404).json({ error: 'Action inconnue' });
+  // ─── GET /api/exercises/assignments ───
+  if (action === 'assignments' && req.method === 'GET') {
+    const { data, error } = await supabase
+      .from('assignment')
+      .select('id, eleve_email, titre, contenu, lang, difficulty, reponses, submitted_at, feedback, feedback_at, corrige_visible, created_at')
+      .eq('teacher_id', teacherId)
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('assignments fetch error:', error);
+      return res.status(500).json({ detail: 'Erreur récupération devoirs' });
+    }
+
+    return res.status(200).json(data ?? []);
+  }
+
+  return res.status(404).json({ detail: 'Action inconnue' });
 }

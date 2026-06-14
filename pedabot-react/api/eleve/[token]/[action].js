@@ -6,52 +6,58 @@ export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
 
   const { token, action } = req.query;
-  if (!token) return res.status(400).json({ error: 'Token requis' });
+  if (!token) return res.status(400).json({ detail: 'Token requis' });
 
+  // ─── POST /api/eleve/:token/submit (anonyme) ───
   if (action === 'submit' && req.method === 'POST') {
-    const { nom_eleve, reponse } = req.body || {};
-    if (!nom_eleve || !reponse) return res.status(400).json({ error: 'Nom et réponse requis' });
+    const { eleve_prenom, reponses } = req.body || {};
+    if (!eleve_prenom || !reponses) return res.status(400).json({ detail: 'Prénom et réponses requis' });
 
-    const { data: link, error: linkErr } = await supabase
+    const { data: link } = await supabase
       .from('sharedlink')
-      .select('exercise_id')
+      .select('token')
       .eq('token', token)
-      .single();
+      .maybeSingle();
 
-    if (linkErr || !link) return res.status(404).json({ error: 'Lien invalide' });
+    if (!link) return res.status(404).json({ detail: 'Lien invalide' });
 
     const { error } = await supabase
       .from('submission')
-      .insert({ exercise_id: link.exercise_id, nom_eleve, reponse });
+      .insert({
+        token,
+        eleve_prenom: String(eleve_prenom).trim(),
+        reponses: String(reponses).trim(),
+      });
 
-    if (error) return res.status(500).json({ error: 'Erreur soumission' });
+    if (error) return res.status(500).json({ detail: 'Erreur soumission' });
 
     return res.status(201).json({ message: 'Réponse enregistrée' });
   }
 
+  // ─── GET /api/eleve/:token/submissions (prof) ───
   if (action === 'submissions' && req.method === 'GET') {
     const user = requireAuth(req);
-    if (!user || user.role !== 'prof') return res.status(403).json({ error: 'Accès réservé aux professeurs' });
+    if (!user || user.role !== 'prof') return res.status(403).json({ detail: 'Accès réservé aux professeurs' });
 
-    const { data: link, error: linkErr } = await supabase
+    const { data: link } = await supabase
       .from('sharedlink')
-      .select('exercise_id')
+      .select('token, teacher_id')
       .eq('token', token)
-      .eq('prof_id', user.sub)
-      .single();
+      .maybeSingle();
 
-    if (linkErr || !link) return res.status(404).json({ error: 'Lien introuvable' });
+    if (!link) return res.status(404).json({ detail: 'Lien introuvable' });
+    if (link.teacher_id !== Number(user.sub)) return res.status(403).json({ detail: 'Accès interdit' });
 
     const { data: subs, error } = await supabase
       .from('submission')
-      .select('id, nom_eleve, reponse, created_at')
-      .eq('exercise_id', link.exercise_id)
-      .order('created_at', { ascending: false });
+      .select('id, eleve_prenom, reponses, submitted_at')
+      .eq('token', token)
+      .order('submitted_at', { ascending: false });
 
-    if (error) return res.status(500).json({ error: 'Erreur récupération soumissions' });
+    if (error) return res.status(500).json({ detail: 'Erreur récupération soumissions' });
 
-    return res.status(200).json(subs);
+    return res.status(200).json(subs ?? []);
   }
 
-  return res.status(404).json({ error: 'Action inconnue' });
+  return res.status(404).json({ detail: 'Action inconnue' });
 }

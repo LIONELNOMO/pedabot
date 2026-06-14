@@ -4,56 +4,62 @@ import { hashPassword, verifyPassword, createToken, cors } from '../../lib/auth.
 export default async function handler(req, res) {
   cors(res);
   if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== 'POST') return res.status(405).json({ detail: 'Method not allowed' });
 
   const { action } = req.query;
 
   if (action === 'login') {
     const { email, password } = req.body || {};
-    if (!email || !password) return res.status(400).json({ error: 'Email et mot de passe requis' });
+    if (!email || !password) return res.status(400).json({ detail: 'Email et mot de passe requis' });
 
-    const { data: user, error } = await supabase
+    const { data: user } = await supabase
       .from('user')
       .select('id, email, nom, role, password_hash')
-      .eq('email', email.toLowerCase().trim())
-      .single();
+      .eq('email', String(email).toLowerCase().trim())
+      .maybeSingle();
 
-    if (error || !user) return res.status(401).json({ error: 'Identifiants invalides' });
+    if (!user) return res.status(401).json({ detail: 'Identifiants invalides' });
     if (!verifyPassword(password, user.password_hash))
-      return res.status(401).json({ error: 'Identifiants invalides' });
+      return res.status(401).json({ detail: 'Identifiants invalides' });
 
     const token = createToken(user.id, user.email, user.nom, user.role);
-    return res.status(200).json({ token, nom: user.nom, role: user.role, email: user.email });
+    return res.status(200).json({
+      token,
+      user: { id: user.id, email: user.email, nom: user.nom, role: user.role },
+    });
   }
 
   if (action === 'register') {
     const { email, password, nom, role } = req.body || {};
-    if (!email || !password || !nom) return res.status(400).json({ error: 'Champs requis manquants' });
+    if (!email || !password || !nom) return res.status(400).json({ detail: 'Champs requis manquants' });
 
-    const allowedRoles = ['prof', 'eleve'];
-    const userRole = allowedRoles.includes(role) ? role : 'eleve';
+    const userRole = ['prof', 'eleve'].includes(role) ? role : 'prof';
+    const cleanEmail = String(email).toLowerCase().trim();
 
     const { data: existing } = await supabase
       .from('user')
       .select('id')
-      .eq('email', email.toLowerCase().trim())
-      .single();
+      .eq('email', cleanEmail)
+      .maybeSingle();
 
-    if (existing) return res.status(409).json({ error: 'Email déjà utilisé' });
+    if (existing) return res.status(409).json({ detail: 'Email déjà utilisé' });
 
     const password_hash = hashPassword(password);
 
     const { data: user, error } = await supabase
       .from('user')
-      .insert({ email: email.toLowerCase().trim(), password_hash, nom, role: userRole })
+      .insert({ email: cleanEmail, password_hash, nom, role: userRole })
       .select('id, email, nom, role')
       .single();
 
-    if (error) return res.status(500).json({ error: 'Erreur lors de la création du compte' });
+    if (error) return res.status(500).json({ detail: 'Erreur lors de la création du compte' });
 
     const token = createToken(user.id, user.email, user.nom, user.role);
-    return res.status(201).json({ token, nom: user.nom, role: user.role, email: user.email });
+    return res.status(201).json({
+      token,
+      user: { id: user.id, email: user.email, nom: user.nom, role: user.role },
+    });
   }
 
-  return res.status(404).json({ error: 'Action inconnue' });
+  return res.status(404).json({ detail: 'Action inconnue' });
 }

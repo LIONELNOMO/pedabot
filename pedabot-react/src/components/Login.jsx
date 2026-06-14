@@ -12,7 +12,7 @@ const DEMO_ACCOUNTS = [
 export default function Login() {
   const { loginUser } = useApp();
   const [tab, setTab] = useState('login');
-  const role = 'prof';
+  const [role, setRole] = useState('prof');
   const [nom, setNom]           = useState('');
   const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
@@ -210,8 +210,22 @@ export default function Login() {
           {tab === 'register' && (
             <form onSubmit={handleRegister} className="auth-form">
 
+              <label className="llabel">Je m'inscris en tant que</label>
+              <div className="role-toggle">
+                <button type="button"
+                  className={`role-btn ${role === 'prof' ? 'active' : ''}`}
+                  onClick={() => setRole('prof')}>
+                  Enseignant
+                </button>
+                <button type="button"
+                  className={`role-btn ${role === 'eleve' ? 'active' : ''}`}
+                  onClick={() => setRole('eleve')}>
+                  Élève
+                </button>
+              </div>
+
               <label className="llabel">Nom complet</label>
-              <input className="linput" type="text" placeholder="M. Kamga, Mme Ebolo…"
+              <input className="linput" type="text" placeholder={role === 'prof' ? 'M. Kamga, Mme Ebolo…' : 'Jean Dupont, Amina Diop…'}
                 value={nom} onChange={e => setNom(e.target.value)} />
 
               <label className="llabel">Email</label>

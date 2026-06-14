@@ -4,32 +4,40 @@ import { cors, requireAuth } from '../../lib/auth.js';
 export default async function handler(req, res) {
   cors(res);
   if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== 'GET') return res.status(405).json({ detail: 'Method not allowed' });
 
   const user = requireAuth(req);
-  if (!user) return res.status(401).json({ error: 'Non authentifié' });
+  if (!user) return res.status(401).json({ detail: 'Non authentifié' });
 
   const { id } = req.query;
-  if (!id) return res.status(400).json({ error: 'ID requis' });
+  if (!id) return res.status(400).json({ detail: 'ID requis' });
 
-  const { data: assignment, error } = await supabase
+  const { data: a, error } = await supabase
     .from('assignment')
-    .select(`
-      id, statut, created_at,
-      exercisedb (id, nom, contenu)
-    `)
-    .eq('id', id)
-    .eq('eleve_id', user.sub)
-    .single();
+    .select('id, titre, teacher_nom, contenu, lang, difficulty, reponses, submitted_at, feedback, feedback_at, corrige_visible, created_at')
+    .eq('id', Number(id))
+    .eq('eleve_email', String(user.email).toLowerCase().trim())
+    .maybeSingle();
 
-  if (error || !assignment) return res.status(404).json({ error: 'Exercice introuvable' });
+  if (error || !a) return res.status(404).json({ detail: 'Exercice introuvable' });
+
+  let exercise;
+  try { exercise = JSON.parse(a.contenu); }
+  catch { exercise = { title: a.titre, body: a.contenu, level: a.difficulty }; }
 
   return res.status(200).json({
-    assignment_id: assignment.id,
-    statut: assignment.statut,
-    created_at: assignment.created_at,
-    exercise_id: assignment.exercisedb.id,
-    nom: assignment.exercisedb.nom,
-    contenu: assignment.exercisedb.contenu,
+    id: a.id,
+    titre: a.titre,
+    teacher_nom: a.teacher_nom,
+    exercise,
+    lang: a.lang,
+    difficulty: a.difficulty,
+    reponses: a.reponses ?? '',
+    submitted: !!a.submitted_at,
+    feedback: a.feedback ?? '',
+    feedback_at: a.feedback_at,
+    corrige_visible: !!a.corrige_visible,
+    submitted_at: a.submitted_at,
+    created_at: a.created_at,
   });
 }

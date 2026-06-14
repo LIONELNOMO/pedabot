@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
+import EleveDashboard from './components/EleveDashboard';
 import ElevePage from './components/ElevePage';
 import WelcomeToast from './components/WelcomeToast';
 import { useApp } from './context/AppContext';
@@ -23,9 +24,15 @@ function App() {
 
   if (eleveToken) return <ElevePage token={eleveToken} />;
 
+  const renderHome = () => {
+    if (!user) return <Login />;
+    if (user.role === 'eleve') return <EleveDashboard />;
+    return <Dashboard />;
+  };
+
   return (
     <>
-      {!user ? <Login /> : <Dashboard />}
+      {renderHome()}
       <WelcomeToast />
     </>
   );

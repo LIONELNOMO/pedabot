@@ -223,9 +223,13 @@ function ExerciseMessage({ msg }) {
   const { exercise } = msg;
   const { token: authToken, wizardDraft } = useApp();
   const [modal, setModal]       = useState(false);
-  const [shareState, setShareState] = useState(null); // null | 'loading' | { token, url } | 'error'
+  const [shareState, setShareState] = useState(null); // null | 'loading' | { token, url, exercise_id } | 'error'
   const [submissions, setSubmissions] = useState(null);
   const [copied, setCopied]     = useState(false);
+  const [tab, setTab]           = useState('lien'); // 'lien' | 'eleves'
+  const [eleves, setEleves]     = useState(null);   // null | 'loading' | array
+  const [selectedEleves, setSelectedEleves] = useState(new Set());
+  const [assignState, setAssignState] = useState(null); // null | 'sending' | 'ok' | 'error'
 
   const lvlClass = exercise.level === 'facile' ? 'easy' : exercise.level === 'moyen' ? 'med' : 'hard';
   const lvlLabel = exercise.level === 'facile' ? 'Niveau Facile' : exercise.level === 'moyen' ? 'Niveau Moyen' : 'Niveau Avancé';
@@ -249,8 +253,47 @@ function ExerciseMessage({ msg }) {
       const data = await res.json();
       if (!res.ok) throw new Error();
       const url = `${window.location.origin}${window.location.pathname}#eleve/${data.token}`;
-      setShareState({ token: data.token, url });
+      setShareState({ token: data.token, url, exercise_id: data.exercise_id });
     } catch { setShareState('error'); }
+  };
+
+  const fetchEleves = async () => {
+    setTab('eleves');
+    if (Array.isArray(eleves)) return;
+    setEleves('loading');
+    try {
+      const res = await fetch(`${API_URL}/api/users/eleves`, {
+        headers: { Authorization: `Bearer ${authToken}` },
+      });
+      const data = await res.json();
+      setEleves(Array.isArray(data) ? data : []);
+    } catch { setEleves([]); }
+  };
+
+  const toggleEleve = (email) => {
+    setSelectedEleves(prev => {
+      const next = new Set(prev);
+      next.has(email) ? next.delete(email) : next.add(email);
+      return next;
+    });
+  };
+
+  const handleAssign = async () => {
+    if (!shareState?.exercise_id || selectedEleves.size === 0) return;
+    setAssignState('sending');
+    try {
+      const res = await fetch(`${API_URL}/api/exercises/assign`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${authToken}` },
+        body: JSON.stringify({
+          exercise_id: shareState.exercise_id,
+          eleve_emails: [...selectedEleves],
+        }),
+      });
+      if (!res.ok) throw new Error();
+      setAssignState('ok');
+      setSelectedEleves(new Set());
+    } catch { setAssignState('error'); }
   };
 
   const handleCopy = () => {
@@ -289,36 +332,100 @@ function ExerciseMessage({ msg }) {
               <button className="sm-close" onClick={() => setModal(false)}>✕</button>
             </div>
 
-            {shareState === 'loading' && <div className="sm-loading">◌ Génération du lien…</div>}
-            {shareState === 'error'   && <div className="sm-error">⚠ Impossible de générer le lien. Réessayez.</div>}
+            {shareState === 'loading' && <div className="sm-loading">◌ Génération…</div>}
+            {shareState === 'error'   && <div className="sm-error">⚠ Impossible de générer. Réessayez.</div>}
 
             {shareState?.token && (
               <>
-                <div className="sm-label">Lien à envoyer à vos élèves :</div>
-                <div className="sm-link-row">
-                  <span className="sm-link">{shareState.url}</span>
-                  <button className="sm-copy" onClick={handleCopy}>{copied ? '✓ Copié !' : 'Copier'}</button>
+                {/* Onglets */}
+                <div className="sm-tabs">
+                  <button
+                    className={`sm-tab ${tab === 'lien' ? 'active' : ''}`}
+                    onClick={() => setTab('lien')}>
+                    ⌬ Lien public
+                  </button>
+                  <button
+                    className={`sm-tab ${tab === 'eleves' ? 'active' : ''}`}
+                    onClick={fetchEleves}>
+                    ✓ Choisir des élèves
+                  </button>
                 </div>
-                <div className="sm-hint">L'élève ouvre le lien, entre son prénom, répond et soumet. Aucun compte requis.</div>
 
-                <button className="sm-subs-btn" onClick={handleViewSubmissions}>≡ Voir les copies reçues</button>
+                {/* ─── ONGLET LIEN PUBLIC ─── */}
+                {tab === 'lien' && (
+                  <>
+                    <div className="sm-label">Lien à envoyer à vos élèves :</div>
+                    <div className="sm-link-row">
+                      <span className="sm-link">{shareState.url}</span>
+                      <button className="sm-copy" onClick={handleCopy}>{copied ? '✓ Copié !' : 'Copier'}</button>
+                    </div>
+                    <div className="sm-hint">L'élève ouvre le lien, entre son prénom, répond et soumet. Aucun compte requis.</div>
 
-                {submissions === 'loading' && <div className="sm-loading">◌ Chargement…</div>}
-                {Array.isArray(submissions) && submissions.length === 0 && (
-                  <div className="sm-hint">Aucune copie reçue pour l'instant.</div>
-                )}
-                {Array.isArray(submissions) && submissions.length > 0 && (
-                  <div className="sm-subs-list">
-                    {submissions.map((s, i) => (
-                      <div key={i} className="sm-sub-item">
-                        <div className="sm-sub-name">
-                          {s.eleve_prenom}
-                          <span className="sm-sub-date">{new Date(s.submitted_at).toLocaleString('fr-FR')}</span>
-                        </div>
-                        <div className="sm-sub-rep">{s.reponses}</div>
+                    <button className="sm-subs-btn" onClick={handleViewSubmissions}>≡ Voir les copies reçues</button>
+
+                    {submissions === 'loading' && <div className="sm-loading">◌ Chargement…</div>}
+                    {Array.isArray(submissions) && submissions.length === 0 && (
+                      <div className="sm-hint">Aucune copie reçue pour l'instant.</div>
+                    )}
+                    {Array.isArray(submissions) && submissions.length > 0 && (
+                      <div className="sm-subs-list">
+                        {submissions.map((s, i) => (
+                          <div key={i} className="sm-sub-item">
+                            <div className="sm-sub-name">
+                              {s.eleve_prenom}
+                              <span className="sm-sub-date">{new Date(s.submitted_at).toLocaleString('fr-FR')}</span>
+                            </div>
+                            <div className="sm-sub-rep">{s.reponses}</div>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
+                    )}
+                  </>
+                )}
+
+                {/* ─── ONGLET CHOISIR DES ÉLÈVES ─── */}
+                {tab === 'eleves' && (
+                  <>
+                    <div className="sm-label">Sélectionnez les élèves à qui envoyer ce devoir :</div>
+
+                    {eleves === 'loading' && <div className="sm-loading">◌ Chargement des élèves…</div>}
+                    {Array.isArray(eleves) && eleves.length === 0 && (
+                      <div className="sm-hint">Aucun élève inscrit pour l'instant.</div>
+                    )}
+
+                    {Array.isArray(eleves) && eleves.length > 0 && (
+                      <div className="sm-eleves-list">
+                        {eleves.map(el => (
+                          <label key={el.id} className={`sm-eleve-row ${selectedEleves.has(el.email) ? 'selected' : ''}`}>
+                            <input
+                              type="checkbox"
+                              checked={selectedEleves.has(el.email)}
+                              onChange={() => toggleEleve(el.email)}
+                            />
+                            <span className="sm-eleve-avatar">{el.nom.substring(0, 2).toUpperCase()}</span>
+                            <span className="sm-eleve-info">
+                              <span className="sm-eleve-name">{el.nom}</span>
+                              <span className="sm-eleve-email">{el.email}</span>
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                    )}
+
+                    {assignState === 'ok'    && <div className="sm-success">✓ Devoir envoyé aux élèves sélectionnés.</div>}
+                    {assignState === 'error' && <div className="sm-error">⚠ Erreur lors de l'envoi. Réessayez.</div>}
+
+                    {Array.isArray(eleves) && eleves.length > 0 && (
+                      <button
+                        className="sm-assign-btn"
+                        disabled={selectedEleves.size === 0 || assignState === 'sending'}
+                        onClick={handleAssign}>
+                        {assignState === 'sending'
+                          ? '◌ Envoi…'
+                          : `Envoyer à ${selectedEleves.size} élève${selectedEleves.size > 1 ? 's' : ''} →`}
+                      </button>
+                    )}
+                  </>
                 )}
               </>
             )}
