@@ -9,7 +9,9 @@ export default async function handler(req, res) {
   const user = requireAuth(req);
   if (!user || user.role !== 'eleve') return res.status(403).json({ error: 'Accès réservé aux élèves' });
 
-  const { id } = req.query;
+  const { id, action } = req.query;
+  if (action !== 'submit') return res.status(404).json({ error: 'Action inconnue' });
+
   const { reponse } = req.body || {};
   if (!id || !reponse) return res.status(400).json({ error: 'ID et réponse requis' });
 
